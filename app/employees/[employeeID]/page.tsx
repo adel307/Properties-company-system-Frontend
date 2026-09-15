@@ -1,0 +1,5 @@
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { employeesApi } from '@/lib/api';
+import RecordForm from '@/components/common/RecordForm';
+export default async function EmployeeDetail({ params }) { const { employeeID } = await params; const response = await employeesApi.getById(employeeID); const employee = response?.data || response || {}; return <div className="max-w-2xl fade-up"><Link href="/employees" className="flex items-center gap-2 font-sans text-xs text-[var(--muted)]"><ArrowLeft size={14} /> People</Link><h1 className="display mt-8 text-5xl">{employee.name || 'Employee unavailable'}</h1><p className="mt-3 font-sans text-sm text-[var(--muted)]">Edit employee profile and employment details.</p><div className="mt-8"><RecordForm fields={[{ name: 'name', label: 'Full name', required: true }, { name: 'phone', label: 'Phone' }, { name: 'salary', label: 'Monthly salary', type: 'number' }, { name: 'experience_years', label: 'Experience in years', type: 'number' }]} submitLabel="Save employee" /></div></div>; }

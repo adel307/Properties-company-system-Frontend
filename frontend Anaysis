@@ -1,0 +1,65 @@
+app/
+├── (routes)/
+│   ├── page.jsx                        // الصفحة الرئيسية (Property List + Hero)
+│   ├── [propertyID]/
+│   │   └── page.jsx                    // تفاصيل عقار + قائمة الشقق + الموظفين المرتبطين
+│   ├── employees/
+│   │   ├── page.jsx                    // قائمة الموظفين (مع البحث والفلترة)
+│   │   └── [employeeID]/
+│   │       └── page.jsx                // تفاصيل موظف وتعديله/حذفه
+│   ├── suppliers/
+│   │   ├── page.jsx                    // عرض الموردين (إجمالي الديون, has_debt, search)
+│   │   └── [supplierID]/
+│   │       └── page.jsx                // تفاصيل المورد والمواد التابعة له (SuppliersDetails)
+│   ├── materials/
+│   │   ├── page.jsx                    // قائمة المواد المشتراة والمستحقات
+│   │   └── [materialID]/
+│   │       └── page.jsx                // تفاصيل مادة معينة وتعديلها
+│   ├── expenses/
+│   │   ├── page.jsx                    // المصروفات اليومية مرتبة بالتاريخ (DailyExpensesOrderedByDate)
+│   │   ├── categories/
+│   │   │   └── page.jsx                // إدارة تصنيفات المصروفات (ExpenseCategories)
+│   │   └── [date]/
+│   │       └── page.jsx                // عرض المصروفات اليومية بتاريخ محدد
+│   └── audit-logs/
+│       └── page.jsx                    // عرض سجل التغييرات والعمليات (AuditLogs)
+
+components/
+├── layout/
+│   ├── Navbar.jsx                      // التنقل الرئيسي (Home, Employees, Suppliers, Materials, Expenses)
+│   ├── Sidebar.jsx                     // اختصارات الإضافة السريعة (Add Employee, Supplier, Material, Expense)
+│   └── Footer.jsx                      // معلومات الشركة والإنشاء
+├── common/
+│   ├── DeleteModal.jsx                 // نافذة تأكيد الحذف إعادة استخدامها لكل الكيانات
+│   ├── Pagination.jsx                  // للتحكم في page & limit عبر الـ APIs
+│   └── FilterBar.jsx                   // مكون البحث والتصنيف العام
+├── properties/
+│   ├── ShowProperties.jsx
+│   ├── FilterProperties.jsx
+│   ├── PropertyCard.jsx
+│   ├── AddPropertyModal.jsx
+│   └── ApartmentsList.jsx
+├── employees/
+│   ├── SearchEmployees.jsx
+│   ├── ShowEmployees.jsx
+│   ├── AddEmployeeModal.jsx
+│   └── UpdateEmployeeForm.jsx
+├── suppliers/
+│   ├── SuppliersDebtSummary.jsx        // كارت إجمالي الديون (/suppliers/total_debt)
+│   ├── ShowSuppliers.jsx               // جدول الموردين (مع فلتر has_debt)
+│   ├── SupplierMaterialsTable.jsx      // عرض تفاصيل المواد التابعة للمورد (View v_supplier_materials)
+│   ├── AddSupplierModal.jsx
+│   └── UpdateSupplierForm.jsx
+├── materials/
+│   ├── ShowMaterials.jsx               // عرض المواد بحالاتها (paid / as_dept)
+│   ├── MaterialCard.jsx
+│   ├── AddMaterialModal.jsx            // نموذج إضافة مادة (ربط بـ supplier_ID و property_ID)
+│   └── UpdateMaterialForm.jsx
+├── expenses/
+│   ├── DailyExpensesTable.jsx          // عرض المصروفات بحسب التاريخ
+│   ├── ExpenseCategoryFilter.jsx       // تصفية بحسب expense_categories_ID
+│   ├── ReceiptUploader.jsx             // رفع صوره الإيصال عند اختيار BANK_TRANSFER/credit_card
+│   ├── AddExpenseModal.jsx             // إضافة مصروف جديد
+│   └── CategoriesManager.jsx           // إضافة/تعديل/حذف تصنيفات المصروفات
+└── audit/
+    └── AuditLogsTable.jsx              // عرض سجل العمليات (INSERT, UPDATE, DELETE) و JSON diffs

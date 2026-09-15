@@ -1,0 +1,2 @@
+'use client';
+export default function ReceiptUploader({ required = false }) { return <label className="block border border-dashed border-[var(--line)] p-4 font-sans text-sm"><span className="block text-xs font-bold">Receipt image {required && <em className="text-[var(--coral)]">required</em>}</span><input type="file" accept="image/*" className="mt-3 block w-full text-xs text-[var(--muted)]" required={required} /></label>; }

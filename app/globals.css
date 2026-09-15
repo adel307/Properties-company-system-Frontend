@@ -1,0 +1,24 @@
+@import 'tailwindcss';
+
+:root {
+  --ink: #17251f;
+  --muted: #6c7771;
+  --paper: #f5f5ef;
+  --card: #fffefa;
+  --line: #dde3dc;
+  --teal: #0f766e;
+  --teal-dark: #115e59;
+  --sun: #f2c14e;
+  --coral: #e87561;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--paper); }
+body { margin: 0; color: var(--ink); background: var(--paper); font-family: Georgia, 'Times New Roman', serif; }
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+.font-sans { font-family: Arial, Helvetica, sans-serif; }
+.display { font-family: Georgia, 'Times New Roman', serif; letter-spacing: -0.025em; }
+.grid-paper { background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 32px 32px; }
+.fade-up { animation: fade-up .55s ease both; }
+@keyframes fade-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }

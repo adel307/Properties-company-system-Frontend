@@ -1,0 +1,5 @@
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { materialsApi } from '@/lib/api';
+import RecordForm from '@/components/common/RecordForm';
+export default async function MaterialPage({ params }) { const { materialID } = await params; const response = await materialsApi.getById(materialID); const material = response?.data || response || {}; return <div className="max-w-2xl fade-up"><Link href="/materials" className="flex items-center gap-2 font-sans text-xs text-[var(--muted)]"><ArrowLeft size={14} /> Materials</Link><h1 className="display mt-8 text-5xl">{material.name || 'Material unavailable'}</h1><p className="mt-3 font-sans text-sm text-[var(--muted)]">Update quantities, payment status, and delivery details.</p><div className="mt-8"><RecordForm fields={[{ name: 'name', label: 'Material name', required: true }, { name: 'quantity', label: 'Quantity', type: 'number', required: true }, { name: 'total_price', label: 'Total price', type: 'number' }, { name: 'arrive_date', label: 'Arrival date', type: 'date' }]} submitLabel="Save material" /></div></div>; }

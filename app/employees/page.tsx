@@ -1,0 +1,3 @@
+import { employeesApi } from '@/lib/api';
+import EntityPage from '@/components/common/EntityPage';
+export default async function EmployeesPage() { const response = await employeesApi.getAll(); const rows = Array.isArray(response) ? response : response?.data || []; return <EntityPage title="People" eyebrow="Team directory" description="Keep the people behind each build visible, assigned, and moving in the same direction." rows={rows} action="Add employee" columns={[{ key: 'name', label: 'Name' }, { key: 'experience_years', label: 'Experience' , render: row => `${row.experience_years} years` }, { key: 'phone', label: 'Phone' }, { key: 'salary', label: 'Monthly salary', render: row => `$${Number(row.salary).toLocaleString()}` }]} />; }

@@ -1,0 +1,2 @@
+import { CircleDollarSign } from 'lucide-react';
+export default function DebtSummaryCard({ amount = 0 }) { return <div className="flex items-center justify-between border border-[var(--teal)] bg-[var(--teal)] p-5 text-white"><div><p className="font-sans text-[10px] uppercase tracking-[.18em] text-white/70">Total supplier debt</p><p className="display mt-2 text-3xl">${Number(amount).toLocaleString()}</p></div><CircleDollarSign size={28} strokeWidth={1.2} /></div>; }
