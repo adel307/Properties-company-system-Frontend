@@ -1,9 +1,49 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, MouseEvent, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { employeesApi } from '@/lib/api/employees';
+
+export interface Column {
+  key: string;
+  label: string;
+}
+
+export interface EntityProperty {
+  role: string;
+  property?: {
+    id: string;
+    name: string;
+    address?: string;
+    status?: string;
+  };
+}
+
+export interface EntityRow {
+  id: string;
+  name?: string;
+  phone?: string;
+  age?: number | string;
+  experienceYears?: number | string;
+  salary?: number | string;
+  status?: string;
+  remaining_amount?: number;
+  total_debt?: number;
+  properties?: EntityProperty[];
+  [key: string]: any;
+}
+
+interface EntityPageProps {
+  title: string;
+  eyebrow: string;
+  description: string;
+  rows?: EntityRow[];
+  columns?: Column[];
+  action?: string;
+  actionHref?: string;
+  onAction?: () => void;
+}
 
 export default function EntityPage({
   title,
@@ -12,22 +52,23 @@ export default function EntityPage({
   rows: initialRows = [],
   columns = [],
   action = 'Add record',
-  actionHref = undefined,
+  actionHref,
   onAction,
-}: any) {
+}: EntityPageProps) {
   const router = useRouter();
 
-  const [tableRows, setTableRows] = useState(initialRows);
-  const [selectedRow, setSelectedRow] = useState<any>(null);
-  const [editData, setEditData] = useState<any>(null);
+  const [tableRows, setTableRows] = useState<EntityRow[]>(initialRows);
+  const [selectedRow, setSelectedRow] = useState<EntityRow | null>(null);
+  const [editData, setEditData] = useState<Partial<EntityRow> | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [saveError, setSaveError] = useState('');
 
   useEffect(() => {
     setTableRows(initialRows);
   }, [initialRows]);
 
-  const openDetails = (row: any) => {
+  const openDetails = (row: EntityRow) => {
     setSelectedRow(row);
     setSaveError('');
     setEditData({
@@ -46,9 +87,28 @@ export default function EntityPage({
     setSaveError('');
   };
 
-  const isEmployee = selectedRow && selectedRow.experienceYears !== undefined && selectedRow.experienceYears !== null;
+  const isEmployee = selectedRow && (selectedRow.experienceYears !== undefined || selectedRow.salary !== undefined);
 
-  const handleSaveEmployee = async (event: React.FormEvent) => {
+  const handleDeleteEmployee = async (event: MouseEvent, row: EntityRow) => {
+    event.stopPropagation();
+    if (deletingId || !window.confirm(`Delete employee ${row.name}?`)) return;
+
+    setDeletingId(row.id);
+    setSaveError('');
+
+    try {
+      await employeesApi.delete(row.id);
+      setTableRows((prevRows) => prevRows.filter((currentRow) => currentRow.id !== row.id));
+      if (selectedRow?.id === row.id) closeDetails();
+      router.refresh();
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Unable to delete employee.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleSaveEmployee = async (event: FormEvent) => {
     event.preventDefault();
     if (!selectedRow || !editData) return;
 
@@ -67,13 +127,13 @@ export default function EntityPage({
       const updatedEmployee = updatedResponse?.data ?? updatedResponse;
       if (!updatedEmployee) throw new Error('Unable to save employee changes.');
 
-      const newRowData = {
+      const newRowData: EntityRow = {
         ...selectedRow,
         ...updatedEmployee,
         properties: selectedRow.properties,
       };
 
-      setTableRows((prevRows: any[]) =>
+      setTableRows((prevRows) =>
         prevRows.map((row) => (row.id === selectedRow.id ? newRowData : row))
       );
 
@@ -94,8 +154,7 @@ export default function EntityPage({
     }
   };
 
-  // الدالة المطلوبة لتنسيق خلايا الجدول
-  const renderCellContent = (row: any, key: string) => {
+  const renderCellContent = (row: EntityRow, key: string) => {
     switch (key) {
       case 'salary':
         return `$${Number(row.salary ?? 0).toLocaleString()}`;
@@ -109,7 +168,7 @@ export default function EntityPage({
       case 'properties':
         if (!row.properties || row.properties.length === 0) return '—';
         return row.properties
-          .map((p: any) => `${p.property?.name || 'Unassigned'} (${p.role})`)
+          .map((p) => `${p.property?.name || 'Unassigned'} (${p.role})`)
           .join(', ');
       default:
         return row[key] ?? '—';
@@ -139,28 +198,40 @@ export default function EntityPage({
         <table className="w-full min-w-[640px] text-left font-sans text-sm">
           <thead className="border-b border-[var(--line)] text-[10px] uppercase tracking-wider text-[var(--muted)]">
             <tr>
-              {columns.map((column: any) => (
+              {columns.map((column) => (
                 <th key={column.key} className="py-3 px-2">{column.label}</th>
               ))}
               <th className="py-3 px-2 text-right">Details</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--line)]">
-            {tableRows.map((row: any) => (
+            {tableRows.map((row) => (
               <tr
-                key={row.id} 
+                key={row.id}
                 className="hover:bg-white/50 cursor-pointer transition-colors"
                 onClick={() => openDetails(row)}
               >
-                {columns.map((column: any) => (
+                {columns.map((column) => (
                   <td key={column.key} className="py-4 px-2">
                     {renderCellContent(row, column.key)}
                   </td>
                 ))}
                 <td className="py-4 px-2 text-right">
-                  <span className="text-xs text-[var(--teal)] underline font-semibold">
-                    View
-                  </span>
+                  <div className="flex items-center justify-end gap-3">
+                    <span className="text-xs text-[var(--teal)] underline font-semibold">
+                      View
+                    </span>
+                    {row.experienceYears !== undefined && row.experienceYears !== null && (
+                      <button
+                        type="button"
+                        onClick={(event) => handleDeleteEmployee(event, row)}
+                        disabled={deletingId === row.id}
+                        className="text-xs font-semibold text-[var(--coral)] underline disabled:opacity-50"
+                      >
+                        {deletingId === row.id ? 'Deleting...' : 'Delete'}
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -173,8 +244,14 @@ export default function EntityPage({
       )}
 
       {selectedRow && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+          onClick={closeDetails}
+        >
+          <div 
+            className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b pb-3">
               <h3 className="text-xl font-bold text-gray-800">Employee details</h3>
               <button 
@@ -201,8 +278,8 @@ export default function EntityPage({
                       <input
                         name={name}
                         type={type}
-                        value={editData?.[name] ?? ''}
-                        onChange={(e) => setEditData((prev: any) => ({ ...prev, [name]: e.target.value }))}
+                        value={editData?.[name as keyof EntityRow] ?? ''}
+                        onChange={(e) => setEditData((prev) => ({ ...prev, [name]: e.target.value }))}
                         required={name !== 'phone'}
                         min={type === 'number' ? '0' : undefined}
                         className="rounded border border-gray-300 bg-white px-3 py-2 text-sm font-normal outline-none focus:border-[var(--teal)]"
@@ -231,7 +308,7 @@ export default function EntityPage({
                 <h4 className="font-bold text-gray-900 border-b pb-1 mb-2">Assigned Properties & Projects:</h4>
                 {selectedRow.properties && selectedRow.properties.length > 0 ? (
                   <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
-                    {selectedRow.properties.map((item: any, idx: number) => (
+                    {selectedRow.properties.map((item, idx) => (
                       <div key={item.property?.id || idx} className="border rounded p-3 bg-white shadow-sm border-gray-200">
                         <div className="flex justify-between items-center">
                           <span className="font-bold text-[var(--teal)]">{item.property?.name}</span>
