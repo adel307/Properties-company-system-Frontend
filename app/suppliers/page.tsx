@@ -4,6 +4,7 @@ import DebtSummaryCard from '@/components/suppliers/DebtSummaryCard';
 
 export default async function SuppliersPage() {
   const response = await suppliersApi.getAll({ page: 1, limit: 20, has_debt: true });
+  console.log('Suppliers API response:', response); // Debugging line
   const rawRows = Array.isArray(response) ? response : response?.data || [];
 
   const debtResponse = await suppliersApi.getTotalDebt();
