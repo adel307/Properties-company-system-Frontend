@@ -39,13 +39,14 @@ export async function apiFetch<T = any>(endpoint: string, options: ApiOptions = 
 
   try {
     const response = await fetch(`${API_BASE}${endpoint}${queryString}`, config);
+    console.log(`[API Fetch] ${endpoint}${queryString} - Status: ${response.status}`);
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || `API Error: ${response.status}`);
     }
     return await response.json() as T;
   } catch (error) {
-    console.error(`[API Fetch Error] ${endpoint}:`, error.message);
+    console.log(`[API Fetch Error] ${endpoint}:`, error.message);
     return null;
   }
 }

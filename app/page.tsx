@@ -29,7 +29,7 @@ export default async function HomePage({ searchParams }) {
 
   const propertiesResponse = await propertiesApi.getAll(filters);
   const properties = propertiesResponse?.data || [];
-  const totalPages = propertiesResponse?.pagination?.total || 1;
+  const totalPages = propertiesResponse?.pagination?.pages || 1;
   const currentPage = filters.page;
 
   const getPageUrl = (pageNumber) => {

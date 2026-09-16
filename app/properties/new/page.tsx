@@ -1,24 +1,33 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import RecordForm from '@/components/common/RecordForm';
 import { propertiesApi } from '@/lib/api/properties';
 
 export default function NewPropertyPage() {
-  // تعريف Server Action خاصة بصفحة الإنشاء هذه
   async function handleCreateProperty(rawData: Record<string, any>) {
     'use server';
 
-    const payload = {
-      name: rawData.name,
-      status: rawData.status,
-      address: rawData.address,
-      startedIn: rawData.started_in,
-      endedIn: rawData.status === 'complete' ? rawData.ended_in : null,
-      floorsNumber: Number(rawData.floors_number || 0),
-      area: Number(rawData.area || 0),
-    };
+    try {
+      const payload = {
+        name: rawData.name,
+        status: rawData.status,
+        address: rawData.address,
+        startedIn: rawData.started_in ? new Date(rawData.started_in).toISOString() : null,
+        endedIn: rawData.status === 'completed' && rawData.ended_in ? new Date(rawData.ended_in).toISOString() : null,
+        floorsNumber: rawData.floors_number ? Number(rawData.floors_number) : 0,
+        area: rawData.area ? String(rawData.area) : '0',
+      };
 
-    return await propertiesApi.create(payload);
+      await propertiesApi.create(payload);
+    } catch (error) {
+      console.log('Failed to create property:', error);
+      return { error: 'Failed to create property. Please try again.' };
+    }
+
+    revalidatePath('/');
+    redirect('/');
   }
 
   return (
@@ -50,8 +59,8 @@ export default function NewPropertyPage() {
               type: 'select',
               required: true,
               options: [
-                { label: 'Complete', value: 'complete' },
                 { label: 'Under Construction', value: 'under_construction' },
+                { label: 'Completed', value: 'completed' },
               ],
             },
           ]}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 
 interface Option {
   label: string;
@@ -19,8 +19,7 @@ interface RecordFormProps {
   fields?: Field[];
   submitLabel?: string;
   onSuccess?: (data: any) => void;
-  // الدالة أصبحت Server Action تقبل البيانات وترجع Promise بالنتيجة
-  onSubmit: (formData: Record<string, any>) => Promise<any>;
+  onSubmit?: (formData: Record<string, any>) => Promise<any>;
 }
 
 export default function RecordForm({ 
@@ -29,36 +28,54 @@ export default function RecordForm({
   onSuccess,
   onSubmit
 }: RecordFormProps) {
-  const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [formDataState, setFormDataState] = useState<Record<string, any>>({
-    status: 'under_construction',
+
+  // إعداد الحالة المبدئية للنموذج من الخيارات المتاحة
+  const [formDataState, setFormDataState] = useState<Record<string, any>>(() => {
+    const initial: Record<string, any> = {};
+    fields.forEach((field) => {
+      if (field.type === 'select' && field.options?.length) {
+        initial[field.name] = field.options[0].value;
+      }
+    });
+    return initial;
   });
 
   const handleChange = (name: string, value: any) => {
     setFormDataState((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
 
     const formData = new FormData(e.currentTarget);
     const rawValues = Object.fromEntries(formData.entries());
 
-    try {
-      // تنفيذ الـ Server Action الممررة من الصفحة
-      const result = await onSubmit(rawValues);
+    startTransition(async () => {
+      try {
+        if (!onSubmit) {
+          throw new Error('This form is not configured for submission.');
+        }
 
-      alert('تم الحفظ بنجاح!');
-      if (onSuccess) onSuccess(result);
+        const result = await onSubmit(rawValues);
 
-    } catch (err: any) {
-      setError(err.message || 'حدث خطأ غير متوقع');
-    } finally {
-      setLoading(false);
-    }
+        // إذا عادت الدالة ببيانات خطأ صريحة من Server Action
+        if (result?.error) {
+          setError(result.error);
+          return;
+        }
+
+        if (onSuccess) onSuccess(result);
+      } catch (err: any) {
+        // تجاهل أخطاء إعادة التوجيه الخاصة بـ Next.js (redirect)
+        if (err?.message === 'NEXT_REDIRECT' || err?.digest?.startsWith('NEXT_REDIRECT')) {
+          return;
+        }
+        setError(err.message || 'An unexpected error occurred');
+      }
+    });
   };
 
   return (
@@ -67,12 +84,13 @@ export default function RecordForm({
       className="grid gap-5 border border-[var(--line)] bg-[var(--card)] p-6 sm:grid-cols-2"
     >
       {error && (
-        <div className="p-3 bg-red-100 text-red-700 text-xs sm:col-span-2">
+        <div className="rounded border border-red-200 bg-red-50 p-3 text-xs text-red-700 sm:col-span-2 dark:bg-red-950/20 dark:border-red-800 dark:text-red-400">
           {error}
         </div>
       )}
 
       {fields.map((field) => {
+        // شرط إخفاء حقل تاريخ الانتهاء إذا كانت الحالة قيد الإنشاء
         if (field.name === 'ended_in' && formDataState['status'] === 'under_construction') {
           return null;
         }
@@ -85,7 +103,7 @@ export default function RecordForm({
               <select
                 name={field.name}
                 required={field.required}
-                defaultValue={field.options?.[0]?.value}
+                value={formDataState[field.name] || field.options?.[0]?.value || ''}
                 onChange={(e) => handleChange(field.name, e.target.value)}
                 className="mt-2 w-full border-b border-[var(--line)] bg-transparent py-2 text-sm font-normal text-[var(--ink)] outline-none focus:border-[var(--teal)]"
               >
@@ -110,10 +128,10 @@ export default function RecordForm({
 
       <button 
         type="submit" 
-        disabled={loading}
-        className="w-fit bg-[var(--teal)] px-5 py-3 font-sans text-sm text-white disabled:opacity-50 sm:col-span-2"
+        disabled={isPending}
+        className="w-fit bg-[var(--teal)] px-5 py-3 font-sans text-sm text-white transition-opacity disabled:opacity-50 sm:col-span-2"
       >
-        {loading ? 'جاري الحفظ...' : submitLabel}
+        {isPending ? 'Saving...' : submitLabel}
       </button>
     </form>
   );

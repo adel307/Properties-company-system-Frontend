@@ -21,7 +21,7 @@ export default async function SuppliersPage()
                     action="Add supplier"
                     columns={[
                         { key: 'name', label: 'Supplier' },
-                        { key: 'total_debt', label: 'Outstanding debt', render: row => <span className={row.total_debt ? 'text-[var(--coral)]' : 'text-[var(--teal)]'}>${Number(row.total_debt || 0).toLocaleString()}</span> },
+                        { key: 'total_debt', label: 'Outstanding debt' },
                         { key: 'updated_at', label: 'Updated' }
                     ]}
                 />

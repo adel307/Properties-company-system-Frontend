@@ -14,13 +14,11 @@ import {
     Calendar,
     Layers,
     UserCheck,
-    Home,
-    Plus
+    X
 } from 'lucide-react';
 import { propertiesApi } from '@/lib/api/properties';
 import { employeesApi } from '@/lib/api/employees';
 
-// Types for Sub-Entities
 interface Employee {
     id: string;
     name: string;
@@ -28,19 +26,20 @@ interface Employee {
 
 interface Apartment {
     id: string;
-    unitNumber: string;
+    floor?: number;
+    number?: string;
 }
 
 interface PropertyFormData {
     name: string;
-    status: 'under_construction' | 'completed' | 'planned';
+    status: 'under_construction' | 'completed';
     address: string;
     startedIn: string;
     endedIn: string;
     floorsNumber: string;
     area: string;
-    employeeIds: string[];
-    apartmentId: string;
+    selectedEmployeeIds: string[];
+    apartments: Apartment[];
 }
 
 interface EditPropertyProps {
@@ -50,23 +49,15 @@ interface EditPropertyProps {
 }
 
 export default function EditPropertyPage({ params }: EditPropertyProps) {
-    const resolvedParams = use(params);
-    const propertyId = resolvedParams.propertyID;
-    
+    const { propertyID: propertyId } = use(params);
     const router = useRouter();
 
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Dropdown options state
     const [employeesList, setEmployeesList] = useState<Employee[]>([]);
-    const [existingApartments, setExistingApartments] = useState<Apartment[]>([]);
 
-    // Toggle for adding a new apartment
-    const [isCreatingApartment, setIsCreatingApartment] = useState(false);
-
-    // Primary Form State
     const [formData, setFormData] = useState<PropertyFormData>({
         name: '',
         status: 'under_construction',
@@ -75,38 +66,38 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
         endedIn: '',
         floorsNumber: '',
         area: '',
-        employeeIds: [],
-        apartmentId: '',
-    });
-
-    // New Apartment Form State
-    const [newApartmentData, setNewApartmentData] = useState({
-        unitNumber: '',
-        rooms: '',
-        price: '',
+        selectedEmployeeIds: [],
+        apartments: [],
     });
 
     useEffect(() => {
+        let isMounted = true;
+
         const fetchInitialData = async () => {
             try {
                 setLoading(true);
+                setError(null);
 
-                // Fetch property and metadata parallelly
                 const [propertyRes, empRes] = await Promise.all([
                     propertiesApi.getById(propertyId),
-                    employeesApi.getAll(),
+                    employeesApi.getAll().catch(() => ({ data: [] })),
                 ]);
 
+                if (!isMounted) return;
+
                 const data = propertyRes?.data || propertyRes;
-                if (empRes?.data) {
-                    setEmployeesList(empRes.data);
-                } else if (Array.isArray(empRes)) {
-                    setEmployeesList(empRes);
-                }
+                const employees = empRes?.data || (Array.isArray(empRes) ? empRes : []);
+
+                setEmployeesList(employees);
 
                 if (data) {
                     const formatDate = (dateStr?: string) => 
                         dateStr ? new Date(dateStr).toISOString().split('T')[0] : '';
+
+                    // استخراج معرفات الموظفين المرتبطين حالياً
+                    const extractedEmployeeIds = Array.isArray(data.employees)
+                        ? data.employees.map((e: any) => e.employeeId || e.employee?.id || e.id).filter(Boolean)
+                        : [];
 
                     setFormData({
                         name: data.name || '',
@@ -116,46 +107,56 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
                         endedIn: formatDate(data.endedIn),
                         floorsNumber: data.floorsNumber ? String(data.floorsNumber) : '',
                         area: data.area ? String(data.area) : '',
-                        employeeIds: Array.isArray(data.employeeIds) 
-                            ? data.employeeIds 
-                            : data.employeeId ? [data.employeeId] : [],
-                        apartmentId: data.apartmentId || '',
+                        selectedEmployeeIds: extractedEmployeeIds,
+                        apartments: Array.isArray(data.apartments) ? data.apartments : [],
                     });
                 }
             } catch (err) {
-                console.error('Error fetching property:', err);
-                setError('فشل في تحميل بيانات العقار. يرجى المحاولة لاحقاً.');
+                if (isMounted) {
+                    console.error('Error fetching property:', err);
+                    setError('Failed to load property data. Please try again later.');
+                }
             } finally {
-                setLoading(false);
+                if (isMounted) setLoading(false);
             }
         };
 
         if (propertyId) {
             fetchInitialData();
         }
+
+        return () => {
+            isMounted = false;
+        };
     }, [propertyId]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
+        setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleEmployeeSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selectedOptions = Array.from(e.target.selectedOptions, (option) => option.value);
-        setFormData((prev) => ({
-            ...prev,
-            employeeIds: selectedOptions,
-        }));
+    // إضافة موظف عند اختياره من الـ Select Box
+    const handleAddEmployee = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedId = e.target.value;
+        if (!selectedId) return;
+
+        setFormData((prev) => {
+            if (prev.selectedEmployeeIds.includes(selectedId)) return prev;
+            return {
+                ...prev,
+                selectedEmployeeIds: [...prev.selectedEmployeeIds, selectedId],
+            };
+        });
+
+        // إعادة ضبط الخيار المحدد في القائمة
+        e.target.value = '';
     };
 
-    const handleNewApartmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setNewApartmentData((prev) => ({
+    // إزالة موظف من القائمة المختارة
+    const handleRemoveEmployee = (empId: string) => {
+        setFormData((prev) => ({
             ...prev,
-            [name]: value,
+            selectedEmployeeIds: prev.selectedEmployeeIds.filter((id) => id !== empId),
         }));
     };
 
@@ -165,23 +166,28 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
             setSubmitting(true);
             setError(null);
 
+            const toISOFormat = (dateStr: string) => {
+                if (!dateStr) return '';
+                return new Date(dateStr).toISOString();
+            };
+
+            if (formData.startedIn && formData.endedIn && new Date(formData.startedIn) > new Date(formData.endedIn)) {
+                setError('End date cannot be earlier than start date.');
+                setSubmitting(false);
+                return;
+            }
+
+            // تجهيز البيانات بالشكل المحدد في API Request
             const payload = {
-                name: formData.name,
+                name: formData.name.trim(),
                 status: formData.status,
-                address: formData.address,
-                startedIn: formData.startedIn,
-                endedIn: formData.endedIn,
-                floorsNumber: Number(formData.floorsNumber),
-                area: Number(formData.area),
-                employeeIds: formData.employeeIds,
-                apartmentId: isCreatingApartment ? null : (formData.apartmentId || null),
-                ...(isCreatingApartment && { 
-                    newApartment: {
-                        unitNumber: newApartmentData.unitNumber,
-                        rooms: Number(newApartmentData.rooms),
-                        price: Number(newApartmentData.price),
-                    } 
-                }),
+                address: formData.address.trim(),
+                startedIn: toISOFormat(formData.startedIn),
+                endedIn: toISOFormat(formData.endedIn),
+                floorsNumber: formData.floorsNumber ? Number(formData.floorsNumber) : 0,
+                area: formData.area ? String(formData.area) : '0',
+                apartments: formData.apartments.map((apt) => ({ id: apt.id })),
+                employees: formData.selectedEmployeeIds.map((id) => ({ id })),
             };
 
             await propertiesApi.update(propertyId, payload);
@@ -190,7 +196,7 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
             router.refresh();
         } catch (err) {
             console.error('Failed to update property:', err);
-            setError('حدث خطأ أثناء حفظ التغييرات. تحقق من البيانات وحاول مجدداً.');
+            setError('An error occurred while saving changes. Please check the data and try again.');
         } finally {
             setSubmitting(false);
         }
@@ -199,9 +205,9 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
     if (loading) {
         return (
             <div className="flex min-h-[400px] w-full items-center justify-center">
-                <div className="flex items-center gap-2 text-sm text-[var(--muted)]">
+                <div className="flex items-center gap-2 text-sm text-[var(--muted,#6b7280)]">
                     <Loader2 className="animate-spin" size={20} />
-                    <span>جاري تحميل بيانات العقار...</span>
+                    <span>Loading property data...</span>
                 </div>
             </div>
         );
@@ -222,7 +228,7 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
             </div>
 
             {error && (
-                <div className="mb-6 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
+                <div className="mb-6 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:bg-red-950/20 dark:border-red-800 dark:text-red-400">
                     <AlertCircle size={18} />
                     <span>{error}</span>
                 </div>
@@ -235,9 +241,7 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
                     
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div className="md:col-span-2">
-                            <label className="mb-1 block font-sans text-xs font-medium">
-                                Property Name
-                            </label>
+                            <label className="mb-1 block font-sans text-xs font-medium">Property Name</label>
                             <div className="relative">
                                 <Building2 size={16} className="absolute left-3 top-3 text-[var(--muted,#9ca3af)]" />
                                 <input
@@ -253,9 +257,7 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
                         </div>
 
                         <div>
-                            <label className="mb-1 block font-sans text-xs font-medium">
-                                Status
-                            </label>
+                            <label className="mb-1 block font-sans text-xs font-medium">Status</label>
                             <select
                                 name="status"
                                 value={formData.status}
@@ -264,14 +266,11 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
                             >
                                 <option value="under_construction">Under Construction</option>
                                 <option value="completed">Completed</option>
-                                <option value="planned">Planned</option>
                             </select>
                         </div>
 
                         <div>
-                            <label className="mb-1 block font-sans text-xs font-medium">
-                                Address
-                            </label>
+                            <label className="mb-1 block font-sans text-xs font-medium">Address</label>
                             <div className="relative">
                                 <MapPin size={16} className="absolute left-3 top-3 text-[var(--muted,#9ca3af)]" />
                                 <input
@@ -287,9 +286,7 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
                         </div>
 
                         <div>
-                            <label className="mb-1 block font-sans text-xs font-medium">
-                                Started In
-                            </label>
+                            <label className="mb-1 block font-sans text-xs font-medium">Started In</label>
                             <div className="relative">
                                 <Calendar size={16} className="absolute left-3 top-3 text-[var(--muted,#9ca3af)]" />
                                 <input
@@ -304,9 +301,7 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
                         </div>
 
                         <div>
-                            <label className="mb-1 block font-sans text-xs font-medium">
-                                Ended In
-                            </label>
+                            <label className="mb-1 block font-sans text-xs font-medium">Ended In</label>
                             <div className="relative">
                                 <Calendar size={16} className="absolute left-3 top-3 text-[var(--muted,#9ca3af)]" />
                                 <input
@@ -328,14 +323,13 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
                     
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
-                            <label className="mb-1 block font-sans text-xs font-medium">
-                                Number of Floors
-                            </label>
+                            <label className="mb-1 block font-sans text-xs font-medium">Number of Floors</label>
                             <div className="relative">
                                 <Layers size={16} className="absolute left-3 top-3 text-[var(--muted,#9ca3af)]" />
                                 <input
                                     type="number"
                                     name="floorsNumber"
+                                    min="1"
                                     required
                                     value={formData.floorsNumber}
                                     onChange={handleChange}
@@ -346,14 +340,13 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
                         </div>
 
                         <div>
-                            <label className="mb-1 block font-sans text-xs font-medium">
-                                Area (m²)
-                            </label>
+                            <label className="mb-1 block font-sans text-xs font-medium">Area (m²)</label>
                             <div className="relative">
                                 <Maximize size={16} className="absolute left-3 top-3 text-[var(--muted,#9ca3af)]" />
                                 <input
                                     type="number"
                                     step="0.1"
+                                    min="1"
                                     name="area"
                                     required
                                     value={formData.area}
@@ -366,108 +359,58 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
                     </div>
                 </div>
 
-                {/* 3. Assignments (Employees & Apartment) */}
+                {/* 3. Employee Assignments (Select Box + Badges) */}
                 <div className="rounded-xl border border-[var(--line,#e5e7eb)] bg-[var(--bg,#ffffff)] p-6 shadow-sm">
-                    <h2 className="mb-4 text-base font-semibold">Assignments & Unit Details</h2>
+                    <h2 className="mb-4 text-base font-semibold">Assign Employees</h2>
                     
                     <div className="space-y-4">
-                        {/* Employee Selection */}
                         <div>
-                            <label className="mb-1 block font-sans text-xs font-medium">
-                                Assigned Employees
-                            </label>
-                            <div className="relative">
-                                <UserCheck size={16} className="absolute left-3 top-3 text-[var(--muted,#9ca3af)]" />
-                                <select
-                                    name="employeeIds"
-                                    multiple
-                                    value={formData.employeeIds}
-                                    onChange={handleEmployeeSelectChange}
-                                    className="w-full rounded-md border border-[var(--line,#d1d5db)] bg-transparent py-2 pl-9 pr-3 text-sm focus:border-black focus:outline-none dark:focus:border-white min-h-[90px]"
-                                >
-                                    {employeesList.map((emp) => (
-                                        <option key={emp.id} value={emp.id}>
-                                            {emp.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <span className="mt-1 block text-[10px] text-[var(--muted,#6b7280)]">
-                                Hold Ctrl (or Cmd) to select multiple employees.
-                            </span>
+                            <label className="mb-1 block font-sans text-xs font-medium">Select Employee to Add</label>
+                            <select
+                                onChange={handleAddEmployee}
+                                defaultValue=""
+                                className="w-full rounded-md border border-[var(--line,#d1d5db)] bg-transparent px-3 py-2 text-sm focus:border-black focus:outline-none dark:focus:border-white"
+                            >
+                                <option value="" disabled>-- Choose an employee --</option>
+                                {employeesList.map((emp) => (
+                                    <option 
+                                        key={emp.id} 
+                                        value={emp.id}
+                                        disabled={formData.selectedEmployeeIds.includes(emp.id)}
+                                    >
+                                        {emp.name} {formData.selectedEmployeeIds.includes(emp.id) ? '(Assigned)' : ''}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
-                        {/* Apartment Link Section */}
-                        <div className="pt-2 border-t border-[var(--line,#e5e7eb)]">
-                            <div className="mb-3 flex items-center justify-between">
-                                <label className="font-sans text-xs font-medium">
-                                    Apartment Link
-                                </label>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsCreatingApartment(!isCreatingApartment)}
-                                    className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
-                                >
-                                    {isCreatingApartment ? 'Select Existing Apartment' : '+ Create New Apartment'}
-                                </button>
+                        <div>
+                            <label className="mb-2 block font-sans text-xs font-medium">Assigned Employees List</label>
+                            <div className="flex flex-wrap gap-2 rounded-md border border-[var(--line,#d1d5db)] p-3 min-h-[50px] items-center">
+                                {formData.selectedEmployeeIds.length > 0 ? (
+                                    formData.selectedEmployeeIds.map((empId) => {
+                                        const emp = employeesList.find((e) => e.id === empId);
+                                        return (
+                                            <span
+                                                key={empId}
+                                                className="inline-flex items-center gap-1.5 rounded-full bg-black px-3 py-1 text-xs text-white dark:bg-white dark:text-black"
+                                            >
+                                                <UserCheck size={12} />
+                                                <span>{emp?.name || empId}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveEmployee(empId)}
+                                                    className="ml-1 text-xs hover:text-red-400 dark:hover:text-red-600 focus:outline-none"
+                                                >
+                                                    <X size={12} />
+                                                </button>
+                                            </span>
+                                        );
+                                    })
+                                ) : (
+                                    <span className="text-xs text-[var(--muted,#6b7280)]">No employees assigned yet.</span>
+                                )}
                             </div>
-
-                            {!isCreatingApartment ? (
-                                <div className="relative">
-                                    <Home size={16} className="absolute left-3 top-3 text-[var(--muted,#9ca3af)]" />
-                                    <select
-                                        name="apartmentId"
-                                        value={formData.apartmentId}
-                                        onChange={handleChange}
-                                        className="w-full rounded-md border border-[var(--line,#d1d5db)] bg-transparent py-2 pl-9 pr-3 text-sm focus:border-black focus:outline-none dark:focus:border-white"
-                                    >
-                                        <option value="">Select Existing Apartment...</option>
-                                        {existingApartments.map((apt) => (
-                                            <option key={apt.id} value={apt.id}>
-                                                Unit #{apt.unitNumber}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            ) : (
-                                <div className="rounded-lg border border-dashed border-[var(--line,#d1d5db)] p-4 bg-neutral-50 dark:bg-neutral-900/50 space-y-3">
-                                    <div className="flex items-center gap-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                                        <Plus size={14} /> Add New Apartment Specs
-                                    </div>
-                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                                        <div>
-                                            <input
-                                                type="text"
-                                                name="unitNumber"
-                                                placeholder="Unit Number (e.g. A-102)"
-                                                value={newApartmentData.unitNumber}
-                                                onChange={handleNewApartmentChange}
-                                                className="w-full rounded-md border border-[var(--line,#d1d5db)] bg-white dark:bg-transparent px-3 py-1.5 text-sm"
-                                            />
-                                        </div>
-                                        <div>
-                                            <input
-                                                type="number"
-                                                name="rooms"
-                                                placeholder="Rooms Count"
-                                                value={newApartmentData.rooms}
-                                                onChange={handleNewApartmentChange}
-                                                className="w-full rounded-md border border-[var(--line,#d1d5db)] bg-white dark:bg-transparent px-3 py-1.5 text-sm"
-                                            />
-                                        </div>
-                                        <div>
-                                            <input
-                                                type="number"
-                                                name="price"
-                                                placeholder="Price ($)"
-                                                value={newApartmentData.price}
-                                                onChange={handleNewApartmentChange}
-                                                className="w-full rounded-md border border-[var(--line,#d1d5db)] bg-white dark:bg-transparent px-3 py-1.5 text-sm"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>

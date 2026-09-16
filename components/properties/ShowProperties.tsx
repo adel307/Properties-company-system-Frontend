@@ -51,8 +51,8 @@ export default function ShowProperties({ properties = [] }) {
               label="Area"
               value={`${(property.area / 1000).toFixed(1)}k m²`}
             />
-            <Metric label="Floors" value={property.floors_number} />
-            <Metric label="Homes" value={property.apartments_number} />
+            <Metric label="Floors" value={property.floorsNumber} />
+            <Metric label="Homes" value={[property.apartments].length} />
           </div>
         </Link>
       ))}
