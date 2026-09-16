@@ -23,9 +23,9 @@ export async function apiFetch<T = any>(endpoint: string, options: ApiOptions = 
   }
 
   const config: RequestInit & { next?: { revalidate?: number } } = {
-    method: body ? 'POST' : 'GET',
+    method: customConfig.method || (body ? 'POST' : 'GET'),
     headers: {
-      'Content-Type': 'json' in customConfig ? 'application/json' : 'application/json',
+      'Content-Type': body instanceof FormData ? undefined : 'application/json',
       ...headers,
     },
     next: { revalidate: 0 },
@@ -42,11 +42,12 @@ export async function apiFetch<T = any>(endpoint: string, options: ApiOptions = 
     console.log(`[API Fetch] ${endpoint}${queryString} - Status: ${response.status}`);
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `API Error: ${response.status}`);
+      throw new Error(errorData.error || errorData.message || `API Error: ${response.status}`);
     }
+    if (response.status === 204) return null;
     return await response.json() as T;
   } catch (error) {
-    console.log(`[API Fetch Error] ${endpoint}:`, error.message);
-    return null;
+    console.error(`[API Fetch Error] ${endpoint}:`, error);
+    throw error instanceof Error ? error : new Error('Request failed');
   }
 }

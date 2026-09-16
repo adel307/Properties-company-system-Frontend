@@ -1,21 +1,37 @@
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { ArrowLeft, MapPin, Building2, Maximize2, Calendar, UserCheck } from 'lucide-react';
 import { propertiesApi } from '@/lib/api/properties';
 import ApartmentsList from '@/components/properties/ApartmentsList';
 import PropertyActions from '@/components/properties/PropertyActions';
-import AddApartmentForm from '@/components/properties/AddApartmentForm'; // <--- إضافة المكون الجديد
+import AddApartmentForm from '@/components/properties/AddApartmentForm';
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default async function PropertyPage({ params }: { params: Promise<{ propertyID: string }> }) {
     const { propertyID } = await params;
 
-    const propertyResponse = await propertiesApi.getById(propertyID);
-    const property = propertyResponse?.data || propertyResponse || null;
-    
+    if (!UUID_REGEX.test(propertyID)) {
+        notFound();
+    }
+
+    let property = null;
+    try {
+        const propertyResponse = await propertiesApi.getById(propertyID);
+        property = propertyResponse?.data || propertyResponse || null;
+    } catch {
+        notFound();
+    }
+
+    if (!property) {
+        notFound();
+    }
+
     const apartments = Array.isArray(property?.apartments) ? property.apartments : [];
     const employees = Array.isArray(property?.employees) ? property.employees : [];
 
     const formatDate = (dateString?: string | null) => {
-        if (!dateString) return 'غيرحدد';
+        if (!dateString) return 'غير محدد';
         return new Date(dateString).toLocaleDateString('ar-EG', {
             year: 'numeric',
             month: 'short',
@@ -85,10 +101,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ prope
 
             <div className="grid gap-10 py-9 lg:grid-cols-[1fr_280px]">
                 <div>
-                    {/* إضافة section إضافة الشقة هنا */}
                     <AddApartmentForm propertyID={propertyID} />
-
-                    {/* عرض قائمة الشقق */}
                     <ApartmentsList apartments={apartments} />
                 </div>
 
