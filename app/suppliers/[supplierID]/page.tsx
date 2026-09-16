@@ -1,11 +1,18 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { suppliersApi } from '@/lib/api';
+import { materialsApi } from '@/lib/api/materials';
 import SupplierMaterialsTable from '@/components/suppliers/SupplierMaterialsTable';
+import SupplierMaterialsEditor from '@/components/suppliers/SupplierMaterialsEditor';
 export default async function SupplierPage({ params }) {
 	const { supplierID } = await params;
-	const response = await suppliersApi.getById(supplierID);
-	const supplier = response?.data || response || {};
+	const [supplierResponse, materialsResponse] = await Promise.all([
+		suppliersApi.getById(supplierID),
+		materialsApi.getAll({ page: 1, limit: 100 }),
+	]);
+	const supplier = supplierResponse?.data || supplierResponse || {};
+	const allMaterialsResponse = Array.isArray(materialsResponse) ? materialsResponse : materialsResponse?.data || [];
+	const allMaterials = Array.isArray(allMaterialsResponse) ? allMaterialsResponse : [];
 	const materials = (supplier.materials || []).map((material) => ({
 		id: material.id,
 		name: material.name,
@@ -34,6 +41,11 @@ export default async function SupplierPage({ params }) {
 				<h2 className="display mb-4 text-2xl">Material history</h2>
 				<SupplierMaterialsTable materials={materials} />
 			</section>
+				<SupplierMaterialsEditor
+					supplierId={supplierID}
+					materials={allMaterials}
+					assignedMaterialIds={materials.map((material) => material.id)}
+				/>
 		</div>
 	);
 }

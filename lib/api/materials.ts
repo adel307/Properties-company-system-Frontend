@@ -1,7 +1,7 @@
 import { apiFetch } from './client';
 
 export const materialsApi = {
-  getAll: () => apiFetch('/materials'),
+  getAll: (params?: Record<string, string | number | boolean>) => apiFetch('/materials', { params }),
   getById: (id) => apiFetch(`/materials/${id}`),
   create: (data) => apiFetch('/materials', { method: 'POST', body: data }),
   update: (id, data) => apiFetch(`/materials/${id}`, { method: 'PUT', body: data }),

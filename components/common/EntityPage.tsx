@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect, MouseEvent, FormEvent } from 'react';
+import { useState, useEffect, MouseEvent, FormEvent, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { employeesApi } from '@/lib/api/employees';
 
@@ -70,6 +70,24 @@ export default function EntityPage({
     setTableRows(initialRows);
   }, [initialRows]);
 
+  const closeDetails = useCallback(() => {
+    if (isSaving) return;
+    setSelectedRow(null);
+    setEditData(null);
+    setSaveError('');
+  }, [isSaving]);
+
+  // إغلاق Modal عند الضغط على زر Esc
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedRow) {
+        closeDetails();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedRow, closeDetails]);
+
   const openDetails = (row: EntityRow) => {
     setSelectedRow(row);
     setSaveError('');
@@ -82,14 +100,10 @@ export default function EntityPage({
     });
   };
 
-  const closeDetails = () => {
-    if (isSaving) return;
-    setSelectedRow(null);
-    setEditData(null);
-    setSaveError('');
-  };
-
-  const isEmployee = selectedRow && (selectedRow.experienceYears !== undefined || selectedRow.salary !== undefined);
+  // التحقق الصريح من وجود الحقول لضمان تصنيف الموظف
+  const isEmployee =
+    selectedRow !== null &&
+    (selectedRow.experienceYears !== undefined || selectedRow.salary !== undefined);
 
   const openRowDetails = (row: EntityRow) => {
     if (detailHref) {
@@ -101,7 +115,7 @@ export default function EntityPage({
 
   const handleDeleteEmployee = async (event: MouseEvent, row: EntityRow) => {
     event.stopPropagation();
-    if (deletingId || !window.confirm(`Delete employee ${row.name}?`)) return;
+    if (deletingId || !window.confirm(`Delete employee ${row.name || 'this record'}?`)) return;
 
     setDeletingId(row.id);
     setSaveError('');
@@ -231,7 +245,7 @@ export default function EntityPage({
                     <span className="text-xs text-[var(--teal)] underline font-semibold">
                       View
                     </span>
-                    {row.experienceYears !== undefined && row.experienceYears !== null && (
+                    {(row.experienceYears !== undefined && row.experienceYears !== null) && (
                       <button
                         type="button"
                         onClick={(event) => handleDeleteEmployee(event, row)}
@@ -265,6 +279,7 @@ export default function EntityPage({
             <div className="flex items-center justify-between border-b pb-3">
               <h3 className="text-xl font-bold text-gray-800">Employee details</h3>
               <button 
+                type="button"
                 onClick={closeDetails}
                 className="text-gray-400 hover:text-gray-600 text-lg font-bold"
                 disabled={isSaving}
@@ -337,6 +352,7 @@ export default function EntityPage({
 
             <div className="mt-6 text-right">
               <button 
+                type="button"
                 onClick={closeDetails}
                 disabled={isSaving}
                 className="bg-gray-800 text-white px-4 py-2 rounded text-xs font-semibold"
