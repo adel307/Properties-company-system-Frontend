@@ -38,6 +38,7 @@ export default async function SuppliersPage() {
           description="Track who is owed, what arrived, and where every material is being used."
           rows={rows}
           action="Add supplier"
+          detailHref="/suppliers"
           columns={[
             { key: 'name', label: 'Supplier' },
             { key: 'total_debt', label: 'Outstanding debt' },

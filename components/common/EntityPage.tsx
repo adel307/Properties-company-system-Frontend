@@ -42,6 +42,7 @@ interface EntityPageProps {
   columns?: Column[];
   action?: string;
   actionHref?: string;
+  detailHref?: string;
   onAction?: () => void;
 }
 
@@ -53,6 +54,7 @@ export default function EntityPage({
   columns = [],
   action = 'Add record',
   actionHref,
+  detailHref,
   onAction,
 }: EntityPageProps) {
   const router = useRouter();
@@ -88,6 +90,14 @@ export default function EntityPage({
   };
 
   const isEmployee = selectedRow && (selectedRow.experienceYears !== undefined || selectedRow.salary !== undefined);
+
+  const openRowDetails = (row: EntityRow) => {
+    if (detailHref) {
+      router.push(`${detailHref}/${row.id}`);
+      return;
+    }
+    openDetails(row);
+  };
 
   const handleDeleteEmployee = async (event: MouseEvent, row: EntityRow) => {
     event.stopPropagation();
@@ -209,7 +219,7 @@ export default function EntityPage({
               <tr
                 key={row.id}
                 className="hover:bg-white/50 cursor-pointer transition-colors"
-                onClick={() => openDetails(row)}
+                onClick={() => openRowDetails(row)}
               >
                 {columns.map((column) => (
                   <td key={column.key} className="py-4 px-2">
