@@ -1,3 +1,17 @@
-import { auditApi } from '@/lib/api';
+import { auditApi } from '@/lib/api/audit';
 import AuditLogsTable from '@/components/audit/AuditLogsTable';
-export default async function AuditLogsPage() { const response = await auditApi.getAll(); const logs = Array.isArray(response) ? response : response?.data || []; return <div className="fade-up"><p className="font-sans text-[10px] font-bold uppercase tracking-[.2em] text-[var(--teal)]">System history</p><h1 className="display mt-3 text-5xl">Audit logs</h1><p className="mt-3 max-w-xl font-sans text-sm leading-6 text-[var(--muted)]">A transparent timeline of inserts, updates, and deletes across the operation.</p><div className="mt-10"><AuditLogsTable logs={logs} /></div></div>; }
+export default async function AuditLogsPage() { 
+    const response = await auditApi.getAll(); 
+    const log = Array.isArray(response) ? response : response?.data || [];
+
+    const logs = []
+
+    return (
+        <div className="fade-up">
+            <p className="font-sans text-[10px] font-bold uppercase tracking-[.2em] text-[var(--teal)]">System history</p>
+            <h1 className="display mt-3 text-5xl">Audit logs</h1>
+            <p className="mt-3 max-w-xl font-sans text-sm leading-6 text-[var(--muted)]">A transparent timeline of inserts, updates, and deletes across the operation.</p>
+            <div className="mt-10"><AuditLogsTable logs={logs} /></div>
+        </div>
+    )
+}

@@ -11,7 +11,6 @@ export default function FilterProperties({ currentFilters = {} }: FilterProperti
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // حالة محلية (Local State) لتخزين كافة القيم قبل الإرسال
   const [filters, setFilters] = useState({
     status: typeof currentFilters.status === 'string' ? currentFilters.status : 'all',
     min_area: typeof currentFilters.min_area === 'string' ? currentFilters.min_area : '',
@@ -22,7 +21,6 @@ export default function FilterProperties({ currentFilters = {} }: FilterProperti
     search: typeof currentFilters.search === 'string' ? currentFilters.search : '',
   });
 
-  // مزامنة الـ State المحلية في حال تغير الـ URL من الخارج (مثل أزرار التصفح Next/Prev)
   useEffect(() => {
     setFilters({
       status: typeof currentFilters.status === 'string' ? currentFilters.status : 'all',
@@ -35,18 +33,15 @@ export default function FilterProperties({ currentFilters = {} }: FilterProperti
     });
   }, [currentFilters]);
 
-  // تحديث الـ State المحلية فقط
   const handleChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  // عند ضغط Submit يتم التوجيه إلى المسار الرئيسي (/) مع إعادة ضبط رقم الصفحة إلى 1
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const params = new URLSearchParams(searchParams.toString());
 
-    // العودة للصفحة الأولى عند تغيير الفلاتر
     params.set('page', '1');
 
     Object.entries(filters).forEach(([key, value]) => {
@@ -60,7 +55,6 @@ export default function FilterProperties({ currentFilters = {} }: FilterProperti
     router.push(`/?${params.toString()}`);
   };
 
-  // تفريغ جميع الفلاتر
   const handleReset = () => {
     setFilters({
       status: 'all',
@@ -76,7 +70,6 @@ export default function FilterProperties({ currentFilters = {} }: FilterProperti
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-4 font-sans text-xs">
-      {/* البحث (Search) */}
       <div className="flex flex-col gap-1">
         <span className="text-[var(--muted)]">Search</span>
         <input
@@ -88,7 +81,6 @@ export default function FilterProperties({ currentFilters = {} }: FilterProperti
         />
       </div>
 
-      {/* الحالة (Status) */}
       <div className="flex flex-col gap-1">
         <span className="text-[var(--muted)]">Status</span>
         <select
@@ -102,7 +94,6 @@ export default function FilterProperties({ currentFilters = {} }: FilterProperti
         </select>
       </div>
 
-      {/* المساحة (Area Range) */}
       <div className="flex flex-col gap-1">
         <span className="text-[var(--muted)]">Area (sqm)</span>
         <div className="flex items-center gap-1">
@@ -124,7 +115,6 @@ export default function FilterProperties({ currentFilters = {} }: FilterProperti
         </div>
       </div>
 
-      {/* تواريخ البداية والنهاية */}
       <div className="flex flex-col gap-1">
         <span className="text-[var(--muted)]">Started After</span>
         <input
@@ -145,7 +135,6 @@ export default function FilterProperties({ currentFilters = {} }: FilterProperti
         />
       </div>
 
-      {/* الترتيب (Sort By) */}
       <div className="flex flex-col gap-1">
         <span className="text-[var(--muted)]">Sort By</span>
         <select
@@ -160,7 +149,6 @@ export default function FilterProperties({ currentFilters = {} }: FilterProperti
         </select>
       </div>
 
-      {/* أزرار التحكم */}
       <div className="flex items-center gap-2 pt-2">
         <button
           type="submit"

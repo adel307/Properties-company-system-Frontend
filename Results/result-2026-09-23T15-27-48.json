@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "transcription": "أضف ماتريال جديدة باسم أسمنت أبيض السعر 100 ألف المدفوعة 50 ألف الكمية 10 ألف تاريخ الوصول النهاردة تاريخ تسليم يوم 10 أكتوبر. الحالة تتحرك.",
+  "message": "The user wants to add a new material (\"أسمنت أبيض\") with specific details:\n- Name: أسمنت أبيض\n- Total Price: 100,000\n- Paid Price: 50,000\n- Quantity: 10,000\n- Arrival Date: Today (I need to determine today's date, but the tool accepts YYYY-MM-DD. I'll assume the system handles \"today\" or I'll use a placeholder if I can't get it, but usually, I should try to find the current date or just use the string if the tool allows. Wait, the tool documentation says `arriveDate` is `YYYY-MM-DD`. I'll use the current date if possible. Let's assume today is 2025-05-14 based on typical context or just use a standard format. Actually, I don't have a \"get_current_date\" tool, but I can try to infer or just use the provided info. However, the user said \"النهاردة\" (today). I'll check if I can get the date from any other tool or just proceed. Actually, I'll use a standard date if I can't find it, but wait, I should check if I need `supplierId` and `propertyId` which are required.)\n\nRequired parameters for `create_material`:\n- `name`: \"أسمنت أبيض\"\n- `totalPrice`: 100000\n- `supplierId`: (Missing)\n- `propertyId`: (Missing)\n- `paidPrice`: 50000\n- `quantity`: 10000\n- `arriveDate`: (Today's date)\n- `paymentDate`: \"2025-10-10\" (User said \"تاريخ تسليم يوم 10 أكتوبر\", which likely means the payment/due date)\n- `status`: \"as_dept\" (User said \"الحالة تتحرك\", which in this context likely means \"as debt\" or \"on credit\" since only 50k of 100k is paid).\n\nWait, I don't have `supplierId` or `propertyId`. I must ask the user for these or search for them.\nThe user didn't specify which supplier or which property.\nI should first list suppliers and properties to see if there's an obvious one, or ask the user.\nActually, a better approach is to ask the user to specify the supplier and the property.\n\nBut wait, let me check if there are any suppliers or properties I can find.\nI'll start by searching for suppliers and properties to see if I can find a match or if I should just ask.\nActually, the prompt says \"أضف ماتريال جديدة...\". It's a command.\nI'll try to see if I can find a supplier or property that might be relevant, but without more info, I can't.\nI will ask the user for the supplier and the property.\n\nWait, I'll check the list of suppliers and properties first to see if there's only one or a few.\nلإضافة \"أسمنت أبيض\" إلى النظام، أحتاج منك تحديد:\n1. **المورد** (Supplier) الذي تم شراء الأسمنت منه.\n2. **العقار** (Property) الذي سيتم توريد الأسمنت إليه.\n\nيرجى تزويدي باسم المورد واسم العقار لأتمكن من إتمام العملية.",
+  "navigation": null,
+  "history": [
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "أضف ماتريال جديدة باسم أسمنت أبيض السعر 100 ألف المدفوعة 50 ألف الكمية 10 ألف تاريخ الوصول النهاردة تاريخ تسليم يوم 10 أكتوبر. الحالة تتحرك."
+        }
+      ]
+    },
+    {
+      "parts": [
+        {
+          "text": "The user wants to add a new material (\"أسمنت أبيض\") with specific details:\n- Name: أسمنت أبيض\n- Total Price: 100,000\n- Paid Price: 50,000\n- Quantity: 10,000\n- Arrival Date: Today (I need to determine today's date, but the tool accepts YYYY-MM-DD. I'll assume the system handles \"today\" or I'll use a placeholder if I can't get it, but usually, I should try to find the current date or just use the string if the tool allows. Wait, the tool documentation says `arriveDate` is `YYYY-MM-DD`. I'll use the current date if possible. Let's assume today is 2025-05-14 based on typical context or just use a standard format. Actually, I don't have a \"get_current_date\" tool, but I can try to infer or just use the provided info. However, the user said \"النهاردة\" (today). I'll check if I can get the date from any other tool or just proceed. Actually, I'll use a standard date if I can't find it, but wait, I should check if I need `supplierId` and `propertyId` which are required.)\n\nRequired parameters for `create_material`:\n- `name`: \"أسمنت أبيض\"\n- `totalPrice`: 100000\n- `supplierId`: (Missing)\n- `propertyId`: (Missing)\n- `paidPrice`: 50000\n- `quantity`: 10000\n- `arriveDate`: (Today's date)\n- `paymentDate`: \"2025-10-10\" (User said \"تاريخ تسليم يوم 10 أكتوبر\", which likely means the payment/due date)\n- `status`: \"as_dept\" (User said \"الحالة تتحرك\", which in this context likely means \"as debt\" or \"on credit\" since only 50k of 100k is paid).\n\nWait, I don't have `supplierId` or `propertyId`. I must ask the user for these or search for them.\nThe user didn't specify which supplier or which property.\nI should first list suppliers and properties to see if there's an obvious one, or ask the user.\nActually, a better approach is to ask the user to specify the supplier and the property.\n\nBut wait, let me check if there are any suppliers or properties I can find.\nI'll start by searching for suppliers and properties to see if I can find a match or if I should just ask.\nActually, the prompt says \"أضف ماتريال جديدة...\". It's a command.\nI'll try to see if I can find a supplier or property that might be relevant, but without more info, I can't.\nI will ask the user for the supplier and the property.\n\nWait, I'll check the list of suppliers and properties first to see if there's only one or a few.",
+          "thought": true
+        },
+        {
+          "text": "لإضافة \"أسمنت أبيض\" إلى النظام، أحتاج منك تحديد:\n1. **المورد** (Supplier) الذي تم شراء الأسمنت منه.\n2. **العقار** (Property) الذي سيتم توريد الأسمنت إليه.\n\nيرجى تزويدي باسم المورد واسم العقار لأتمكن من إتمام العملية."
+        }
+      ],
+      "role": "model"
+    }
+  ],
+  "time": "2026-09-23T15:27:48.499Z"
+}

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Pencil, Trash2, AlertTriangle, Loader2 } from 'lucide-react';
-import { propertiesApi } from '@/lib/api/properties';
+import { propertiesApi } from "../../lib/api/properties"
 
 export default function PropertyActions({ propertyID }) {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -14,7 +14,7 @@ export default function PropertyActions({ propertyID }) {
     const handleDelete = async () => {
         try {
             setIsDeleting(true);
-            await propertiesApi.delete(propertyID);
+            const res = await propertiesApi.delete(propertyID);
             setIsDeleteOpen(false);
             router.push('/');
             router.refresh();

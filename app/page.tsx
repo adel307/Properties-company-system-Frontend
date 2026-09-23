@@ -7,15 +7,21 @@ import {
   CircleDollarSign,
   HardHat,
   Plus,
+  Sparkles,
 } from 'lucide-react';
 import { propertiesApi } from '@/lib/api/properties';
+import { employeesApi } from '@/lib/api/employees';
+import { suppliersApi } from '@/lib/api/suppliers';
+
 import ShowProperties from '@/components/properties/ShowProperties';
-import FilterProperties from '@/components/properties/FilterProperties';
+import FilterProperties from '@/components/Filters/FilterProperties';
+import { PropertiesFilter } from '@/types/properties';
+import type { LucideIcon } from 'lucide-react';
 
 export default async function HomePage({ searchParams }) {
   const params = await searchParams;
 
-  const filters = {
+  const filters: PropertiesFilter = {
     page: params?.page ? Number(params.page) : 1,
     limit: params?.limit ? Number(params.limit) : 10,
     ...(params?.status && params.status !== 'all' && { status: params.status }),
@@ -32,119 +38,123 @@ export default async function HomePage({ searchParams }) {
   const totalPages = propertiesResponse?.pagination?.pages || 1;
   const currentPage = filters.page;
 
-  const getPageUrl = (pageNumber) => {
+  const employeesResponse = await employeesApi.getAll() || {data:[],pagination:[]}
+
+  const employees = employeesResponse.data || []
+
+  const employeesCount = employees.length || 0
+
+  const getPageUrl = (pageNumber: number) => {
     const query = new URLSearchParams(params || {});
     query.set('page', pageNumber.toString());
     return `/?${query.toString()}`;
   };
-return (
-    <div className="fade-up">
-      {/* Hero Section */}
-      <section className="grid-paper relative overflow-hidden border border-[var(--line)] bg-[var(--card)] px-6 py-10 sm:px-10 lg:py-14">
-        <div className="max-w-2xl">
-          <p className="font-sans text-[10px] font-bold uppercase tracking-[.24em] text-[var(--teal)]">
-            Monday / 13 September 2026
-          </p>
-          <h1 className="display mt-5 max-w-xl text-5xl leading-[.98] sm:text-7xl">
-            A clearer view of the work.
-          </h1>
-          <p className="mt-6 max-w-lg font-sans text-sm leading-6 text-[var(--muted)]">
-            One grounded place for the properties, people, materials, and
-            decisions that move REC forward.
-          </p>
 
-          <div className="mt-8 flex flex-wrap gap-3 font-sans text-sm">
-            <Link
-              href="/properties/new"
-              className="flex items-center gap-2 bg-[var(--teal)] px-4 py-3 text-white"
-            >
-              Add property <Plus size={16} />
-            </Link>
-            <Link
-              href="/audit-logs"
-              className="flex items-center gap-2 border border-[var(--ink)] px-4 py-3"
-            >
-              View activity <ArrowUpRight size={16} />
-            </Link>
+  const TotalDebtRes = await suppliersApi.getTotalDebt() || {data:{total_debt:0}};
+
+  const TotalDebt = TotalDebtRes.data.total_debt || 0;
+
+  return (
+    <div className="dark min-h-screen bg-neutral-950 text-neutral-100 p-4 sm:p-8 font-sans selection:bg-teal-500 selection:text-black">
+      <div className="mx-auto max-w-7xl space-y-10">
+        {/* Hero Section */}
+        <section className="relative overflow-hidden rounded-2xl border border-neutral-800 bg-gradient-to-br from-neutral-900/90 via-neutral-900/50 to-neutral-950 p-6 sm:p-10 lg:p-12 shadow-2xl backdrop-blur-md">
+          {/* Subtle Accent Glows */}
+          <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
+          <div className="absolute -right-16 -bottom-20 hidden h-72 w-72 rounded-full border-[32px] border-amber-500/10 blur-2xl lg:block pointer-events-none" />
+
+          <div className="relative z-10 max-w-3xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-teal-500/20 bg-teal-500/10 px-3 py-1 text-[11px] font-semibold tracking-widest text-teal-400 uppercase">
+              <Sparkles size={12} />
+              <span> الاثنين / 13 سبتمبر 2026 </span>
+            </div>
+
+            <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl leading-tight">
+              نظرة علي <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-200">أعمالك</span>
+            </h1>
+
+            <p className="mt-4 max-w-xl text-base text-neutral-400 sm:text-lg leading-relaxed">
+              One grounded place for the properties, employees, materials, and decisions that move REC forward.
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-4 text-sm font-medium">
+              <Link
+                href="/properties/new"
+                className="inline-flex items-center gap-2 rounded-xl bg-teal-500 px-5 py-3 text-neutral-950 font-semibold transition-all duration-200 hover:bg-teal-400 hover:shadow-lg hover:shadow-teal-500/20 active:scale-95"
+              >
+                Add property <Plus size={18} />
+              </Link>
+            </div>
           </div>
+        </section>
+
+        {/* Stats Section */}
+        <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <Stat icon={Building2} label="Active properties" value={properties.length} />
+          <Link href="/employees">
+            <Stat icon={HardHat} label="Employee on site" value={employeesCount} />
+          </Link>
+          <Link href="/suppliers">
+            <Stat icon={CircleDollarSign} label="Open supplier debt" value={TotalDebt} />
+          </Link>
+          <Stat icon={ArrowUpRight} label="This month" value={"+12.8%"} />
+        </section>
+
+        {/* Header & Filter Controls */}
+        <div className="flex flex-col gap-6 pt-4">
+          <div className="border-b border-neutral-800 pb-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-teal-400">Portfolio</p>
+            <h2 className="mt-1 text-3xl font-bold tracking-tight text-white">Properties in motion</h2>
+          </div>
+
+          <FilterProperties currentFilters={params} />
         </div>
 
-        <div className="absolute -right-16 -bottom-20 hidden h-64 w-64 rounded-full border-[32px] border-[var(--sun)] opacity-80 lg:block" />
-      </section>
-
-      {/* Stats Section */}
-      <section className="mt-9 grid grid-cols-2 gap-px border border-[var(--line)] bg-[var(--line)] sm:grid-cols-4">
-        <Stat
-          icon={Building2}
-          label="Active properties"
-          value={properties.length}
-        />
-        <Stat icon={HardHat} label="People on site" value="48" />
-        <Stat
-          icon={CircleDollarSign}
-          label="Open supplier debt"
-          value="$184k"
-        />
-        <Stat icon={ArrowUpRight} label="This month" value="+12.8%" />
-      </section>
-
-      {/* Header & Filter Controls */}
-      <div className="mt-12 flex flex-col gap-6">
-        <div>
-          <p className="font-sans text-[10px] font-bold uppercase tracking-[.2em] text-[var(--muted)]">
-            Portfolio
-          </p>
-          <h2 className="display mt-2 text-3xl">Properties in motion</h2>
+        {/* Properties List (Wider columns & Gradient/Fade rows) */}
+        <div className="w-full overflow-x-auto rounded-xl border border-neutral-800 bg-neutral-900/30">
+          <ShowProperties properties={properties} />
         </div>
 
-        {/* تمرير كافة القيم الحالية لمكون الفلترة */}
-        <FilterProperties currentFilters={params} />
-      </div>
+        {/* Pagination Controls */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-neutral-800 pt-6 text-sm">
+          <div className="text-neutral-400">
+            Page <span className="font-semibold text-white">{currentPage}</span> of{' '}
+            <span className="font-semibold text-white">{totalPages}</span>
+          </div>
 
-      {/* Properties List */}
-      <div className="mt-6">
-        <ShowProperties properties={properties} />
-      </div>
+          <div className="flex items-center gap-3">
+            {currentPage > 1 ? (
+              <Link
+                href={getPageUrl(currentPage - 1)}
+                className="flex items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-900 px-4 py-2 font-medium text-neutral-200 transition-all hover:border-neutral-700 hover:bg-neutral-800 active:scale-95"
+              >
+                <ChevronLeft size={16} /> Previous
+              </Link>
+            ) : (
+              <button
+                disabled
+                className="flex cursor-not-allowed items-center gap-2 rounded-lg border border-neutral-900 bg-neutral-950 px-4 py-2 font-medium text-neutral-600"
+              >
+                <ChevronLeft size={16} /> Previous
+              </button>
+            )}
 
-      {/* Pagination Controls */}
-      <div className="mt-10 flex items-center justify-between border-t border-[var(--line)] pt-6 font-sans text-sm">
-        <div className="text-[var(--muted)]">
-          Page <span className="font-bold text-[var(--ink)]">{currentPage}</span> of{' '}
-          <span className="font-bold text-[var(--ink)]">{totalPages}</span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {currentPage > 1 ? (
-            <Link
-              href={getPageUrl(currentPage - 1)}
-              className="flex items-center gap-1 border border-[var(--line)] bg-[var(--card)] px-3 py-2 text-sm hover:border-[var(--ink)]"
-            >
-              <ChevronLeft size={16} /> Previous
-            </Link>
-          ) : (
-            <button
-              disabled
-              className="flex items-center gap-1 border border-[var(--line)] opacity-40 px-3 py-2 text-sm cursor-not-allowed"
-            >
-              <ChevronLeft size={16} /> Previous
-            </button>
-          )}
-
-          {currentPage < totalPages ? (
-            <Link
-              href={getPageUrl(currentPage + 1)}
-              className="flex items-center gap-1 border border-[var(--line)] bg-[var(--card)] px-3 py-2 text-sm hover:border-[var(--ink)]"
-            >
-              Next <ChevronRight size={16} />
-            </Link>
-          ) : (
-            <button
-              disabled
-              className="flex items-center gap-1 border border-[var(--line)] opacity-40 px-3 py-2 text-sm cursor-not-allowed"
-            >
-              Next <ChevronRight size={16} />
-            </button>
-          )}
+            {currentPage < totalPages ? (
+              <Link
+                href={getPageUrl(currentPage + 1)}
+                className="flex items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-900 px-4 py-2 font-medium text-neutral-200 transition-all hover:border-neutral-700 hover:bg-neutral-800 active:scale-95"
+              >
+                Next <ChevronRight size={16} />
+              </Link>
+            ) : (
+              <button
+                disabled
+                className="flex cursor-not-allowed items-center gap-2 rounded-lg border border-neutral-900 bg-neutral-950 px-4 py-2 font-medium text-neutral-600"
+              >
+                Next <ChevronRight size={16} />
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -152,14 +162,14 @@ return (
 }
 
 // Sub-component for rendering statistics
-function Stat({ icon: Icon, label, value }) {
+function Stat({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string | number }) {
   return (
-    <div className="bg-[var(--card)] p-4 sm:p-5">
-      <Icon size={17} className="text-[var(--teal)]" />
-      <p className="mt-5 font-sans text-[10px] uppercase tracking-wider text-[var(--muted)]">
-        {label}
-      </p>
-      <p className="display mt-1 text-2xl">{value}</p>
+    <div className="group rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5 transition-all duration-300 hover:border-neutral-700 hover:bg-neutral-900/80">
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/10 text-teal-400 transition-colors group-hover:bg-teal-500 group-hover:text-neutral-950">
+        <Icon size={20} />
+      </div>
+      <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-neutral-400">{label}</p>
+      <p className="mt-1 text-3xl font-bold tracking-tight text-white">{value}</p>
     </div>
   );
 }

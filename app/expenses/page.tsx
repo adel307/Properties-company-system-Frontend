@@ -1,5 +1,63 @@
-import { expensesApi } from '@/lib/api';
-import DailyExpensesTable from '@/components/expenses/DailyExpensesTable';
-import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
-export default async function ExpensesPage() { const response = await expensesApi.getOrderedByDate(); const expenses = Array.isArray(response) ? response : response?.data || []; return <div className="fade-up"><div className="flex flex-wrap items-end justify-between gap-5 border-b border-[var(--line)] pb-8"><div><p className="font-sans text-[10px] font-bold uppercase tracking-[.2em] text-[var(--teal)]">Finance</p><h1 className="display mt-3 text-5xl">Expenses</h1><p className="mt-3 font-sans text-sm text-[var(--muted)]">A daily view of every payment, with the evidence attached.</p></div><div className="flex gap-4 font-sans text-xs"><Link href="/expenses/categories" className="flex items-center gap-1 border-b border-[var(--ink)] py-2">Categories <ArrowUpRight size={13} /></Link><button className="bg-[var(--teal)] px-4 py-3 text-white">+ Add expense</button></div></div><div className="mt-10"><div className="mb-4 flex justify-between"><h2 className="display text-2xl">Latest payments</h2><span className="font-sans text-xs text-[var(--muted)]">Ordered by date</span></div><DailyExpensesTable expenses={expenses} /></div></div>; }
+import { expensesApi } from '@/lib/api/expenses';
+import EntityPage from '@/components/common/EntityPage';
+import { Column, EntityRow } from '@/types/EntityPage';
+
+export default async function ExpensesPage() {
+    const response = await expensesApi.getAll();
+    const rows = Array.isArray(response) ? response : response?.data || [];
+
+    const EnteredRaws = rows.map((row) => ({
+        id: row.id,
+        sender: row.sender,
+        amount: row.amount,
+        expenseCategoryId: row.expenseCategoryId,
+        expenseDate: row.expenseDate.split("T")[0],
+        paidTo: row.paidTo,
+        paymentMethod: row.paymentMethod,
+        receiptNumber: row.receiptNumber,
+        receiptImageUrl: row.receiptImageUrl,
+        approvedBy: row.approvedBy,
+        notes: row.notes,
+        category: row.category,
+    }));
+
+    const columns: Column[] = [
+        { key: 'sender', label: 'Sender', type: 'text' },
+        { key: 'amount', label: 'Amount', type: 'number' },
+        { key: 'expenseDate', label: 'Date', type: 'date' },
+        { key: 'paidTo', label: 'paid to', type: 'text' },
+        { key: 'paymentMethod', label: 'Sender', type: 'text' },
+        { key: 'receiptNumber', label: 'receipt number', type: 'number' },
+        { key: 'receiptImageUrl', label: 'receipt Image Url', type: 'text' },
+        { key: 'approvedBy', label: 'approved by', type: 'text' },
+        { key: 'notes', label: 'notes', type: 'text' },
+        {
+            key: 'category', label: 'Category', type: 'select',
+            // options: 
+        },
+    ];
+
+    const handleSave = async (id: string, updatedData: Partial<EntityRow>) => {
+        'use server';
+        return null;
+    };
+
+    const handleDelete = async (id: string) => {
+        'use server';
+        await null;
+    };
+
+    return (
+        <EntityPage
+        eyebrow="Finance"
+        title="Expenses"
+        description="A daily view of every payment, with the evidence attached."
+        rows={EnteredRaws}
+        columns={columns}
+        action="Add expense"
+        actionHref="/expenses/new" // أو يمكنك استخدام onAction إذا كنت تفتح Modal
+        onSave={handleSave}
+        onDelete={handleDelete}
+        />
+    );
+}

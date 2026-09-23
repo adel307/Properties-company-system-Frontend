@@ -14,39 +14,13 @@ import {
     Calendar,
     Layers,
     UserCheck,
-    X
+    X,
+    Users
 } from 'lucide-react';
 import { propertiesApi } from '@/lib/api/properties';
 import { employeesApi } from '@/lib/api/employees';
-
-interface Employee {
-    id: string;
-    name: string;
-}
-
-interface Apartment {
-    id: string;
-    floor?: number;
-    number?: string;
-}
-
-interface PropertyFormData {
-    name: string;
-    status: 'under_construction' | 'completed';
-    address: string;
-    startedIn: string;
-    endedIn: string;
-    floorsNumber: string;
-    area: string;
-    selectedEmployeeIds: string[];
-    apartments: Apartment[];
-}
-
-interface EditPropertyProps {
-    params: Promise<{
-        propertyID: string;
-    }>;
-}
+import { Employee } from '@/types/employees';
+import { EditPropertyProps, PropertyEmployeeAssignment, PropertyFormData } from '@/types/properties';
 
 export default function EditPropertyPage({ params }: EditPropertyProps) {
     const { propertyID: propertyId } = use(params);
@@ -96,7 +70,7 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
 
                     // استخراج معرفات الموظفين المرتبطين حالياً
                     const extractedEmployeeIds = Array.isArray(data.employees)
-                        ? data.employees.map((e: any) => e.employeeId || e.employee?.id || e.id).filter(Boolean)
+                        ? data.employees.map((e: PropertyEmployeeAssignment) => e.employeeId || e.employee?.id || e.id).filter(Boolean)
                         : [];
 
                     setFormData({
@@ -204,9 +178,9 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
 
     if (loading) {
         return (
-            <div className="flex min-h-[400px] w-full items-center justify-center">
-                <div className="flex items-center gap-2 text-sm text-[var(--muted,#6b7280)]">
-                    <Loader2 className="animate-spin" size={20} />
+            <div className="flex min-h-screen w-full items-center justify-center bg-neutral-950">
+                <div className="flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-3.5 text-sm font-medium text-neutral-400 backdrop-blur-md shadow-2xl">
+                    <Loader2 className="animate-spin text-teal-400" size={20} />
                     <span>Loading property data...</span>
                 </div>
             </div>
@@ -214,232 +188,271 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
     }
 
     return (
-        <div className="mx-auto max-w-4xl px-4 py-8">
-            <div className="mb-6 flex items-center justify-between border-b border-[var(--line,#e5e7eb)] pb-4">
-                <div>
-                    <Link
-                        href={`/${propertyId}`}
-                        className="mb-2 inline-flex items-center gap-1.5 text-xs text-[var(--muted,#6b7280)] transition-colors hover:text-black dark:hover:text-white"
-                    >
-                        <ArrowLeft size={14} /> Back to property
-                    </Link>
-                    <h1 className="font-sans text-2xl font-bold">Edit Property</h1>
-                </div>
-            </div>
-
-            {error && (
-                <div className="mb-6 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:bg-red-950/20 dark:border-red-800 dark:text-red-400">
-                    <AlertCircle size={18} />
-                    <span>{error}</span>
-                </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-                {/* 1. Basic Details */}
-                <div className="rounded-xl border border-[var(--line,#e5e7eb)] bg-[var(--bg,#ffffff)] p-6 shadow-sm">
-                    <h2 className="mb-4 text-base font-semibold">Basic Details</h2>
-                    
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div className="md:col-span-2">
-                            <label className="mb-1 block font-sans text-xs font-medium">Property Name</label>
-                            <div className="relative">
-                                <Building2 size={16} className="absolute left-3 top-3 text-[var(--muted,#9ca3af)]" />
-                                <input
-                                    type="text"
-                                    name="name"
-                                    required
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    placeholder="e.g. Palm Heights"
-                                    className="w-full rounded-md border border-[var(--line,#d1d5db)] bg-transparent py-2 pl-9 pr-3 text-sm focus:border-black focus:outline-none dark:focus:border-white"
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="mb-1 block font-sans text-xs font-medium">Status</label>
-                            <select
-                                name="status"
-                                value={formData.status}
-                                onChange={handleChange}
-                                className="w-full rounded-md border border-[var(--line,#d1d5db)] bg-transparent px-3 py-2 text-sm focus:border-black focus:outline-none dark:focus:border-white"
-                            >
-                                <option value="under_construction">Under Construction</option>
-                                <option value="completed">Completed</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="mb-1 block font-sans text-xs font-medium">Address</label>
-                            <div className="relative">
-                                <MapPin size={16} className="absolute left-3 top-3 text-[var(--muted,#9ca3af)]" />
-                                <input
-                                    type="text"
-                                    name="address"
-                                    required
-                                    value={formData.address}
-                                    onChange={handleChange}
-                                    placeholder="e.g. New Cairo, Egypt"
-                                    className="w-full rounded-md border border-[var(--line,#d1d5db)] bg-transparent py-2 pl-9 pr-3 text-sm focus:border-black focus:outline-none dark:focus:border-white"
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="mb-1 block font-sans text-xs font-medium">Started In</label>
-                            <div className="relative">
-                                <Calendar size={16} className="absolute left-3 top-3 text-[var(--muted,#9ca3af)]" />
-                                <input
-                                    type="date"
-                                    name="startedIn"
-                                    required
-                                    value={formData.startedIn}
-                                    onChange={handleChange}
-                                    className="w-full rounded-md border border-[var(--line,#d1d5db)] bg-transparent py-2 pl-9 pr-3 text-sm focus:border-black focus:outline-none dark:focus:border-white"
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="mb-1 block font-sans text-xs font-medium">Ended In</label>
-                            <div className="relative">
-                                <Calendar size={16} className="absolute left-3 top-3 text-[var(--muted,#9ca3af)]" />
-                                <input
-                                    type="date"
-                                    name="endedIn"
-                                    required
-                                    value={formData.endedIn}
-                                    onChange={handleChange}
-                                    className="w-full rounded-md border border-[var(--line,#d1d5db)] bg-transparent py-2 pl-9 pr-3 text-sm focus:border-black focus:outline-none dark:focus:border-white"
-                                />
-                            </div>
-                        </div>
+        <div className="min-h-screen bg-neutral-950 px-4 py-8 text-neutral-100 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-5xl space-y-8">
+                
+                {/* Header & Back Action */}
+                <div className="animate-in fade-in slide-in-from-top-2 duration-300 flex flex-col gap-4 border-b border-neutral-900 pb-6 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <Link
+                            href={`/${propertyId}`}
+                            className="group mb-3 inline-flex items-center gap-2 rounded-lg bg-neutral-900/60 px-3 py-1.5 text-xs font-semibold text-neutral-400 ring-1 ring-neutral-800 transition-all hover:bg-neutral-800 hover:text-teal-400 hover:ring-teal-500/30"
+                        >
+                            <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-1" />
+                            <span>Back to property</span>
+                        </Link>
+                        <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl">
+                            Edit Property
+                        </h1>
                     </div>
                 </div>
 
-                {/* 2. Physical Specifications */}
-                <div className="rounded-xl border border-[var(--line,#e5e7eb)] bg-[var(--bg,#ffffff)] p-6 shadow-sm">
-                    <h2 className="mb-4 text-base font-semibold">Specifications</h2>
-                    
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <div>
-                            <label className="mb-1 block font-sans text-xs font-medium">Number of Floors</label>
-                            <div className="relative">
-                                <Layers size={16} className="absolute left-3 top-3 text-[var(--muted,#9ca3af)]" />
-                                <input
-                                    type="number"
-                                    name="floorsNumber"
-                                    min="1"
-                                    required
-                                    value={formData.floorsNumber}
-                                    onChange={handleChange}
-                                    placeholder="12"
-                                    className="w-full rounded-md border border-[var(--line,#d1d5db)] bg-transparent py-2 pl-9 pr-3 text-sm focus:border-black focus:outline-none dark:focus:border-white"
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="mb-1 block font-sans text-xs font-medium">Area (m²)</label>
-                            <div className="relative">
-                                <Maximize size={16} className="absolute left-3 top-3 text-[var(--muted,#9ca3af)]" />
-                                <input
-                                    type="number"
-                                    step="0.1"
-                                    min="1"
-                                    name="area"
-                                    required
-                                    value={formData.area}
-                                    onChange={handleChange}
-                                    placeholder="450.5"
-                                    className="w-full rounded-md border border-[var(--line,#d1d5db)] bg-transparent py-2 pl-9 pr-3 text-sm focus:border-black focus:outline-none dark:focus:border-white"
-                                />
-                            </div>
-                        </div>
+                {/* Error Banner */}
+                {error && (
+                    <div className="animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-950/40 p-4 text-xs font-medium text-red-300 backdrop-blur-md">
+                        <AlertCircle size={18} className="shrink-0 text-red-400" />
+                        <span>{error}</span>
                     </div>
-                </div>
+                )}
 
-                {/* 3. Employee Assignments (Select Box + Badges) */}
-                <div className="rounded-xl border border-[var(--line,#e5e7eb)] bg-[var(--bg,#ffffff)] p-6 shadow-sm">
-                    <h2 className="mb-4 text-base font-semibold">Assign Employees</h2>
-                    
-                    <div className="space-y-4">
-                        <div>
-                            <label className="mb-1 block font-sans text-xs font-medium">Select Employee to Add</label>
-                            <select
-                                onChange={handleAddEmployee}
-                                defaultValue=""
-                                className="w-full rounded-md border border-[var(--line,#d1d5db)] bg-transparent px-3 py-2 text-sm focus:border-black focus:outline-none dark:focus:border-white"
-                            >
-                                <option value="" disabled>-- Choose an employee --</option>
-                                {employeesList.map((emp) => (
-                                    <option 
-                                        key={emp.id} 
-                                        value={emp.id}
-                                        disabled={formData.selectedEmployeeIds.includes(emp.id)}
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* 1. Basic Details — Deep Dark Row (Top) */}
+                    <div className="animate-in fade-in slide-in-from-bottom-3 duration-500 fill-mode-backwards delay-100 rounded-2xl border border-neutral-900 bg-neutral-950/90 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+                        <div className="mb-6 flex items-center gap-2 border-b border-neutral-900 pb-4">
+                            <Building2 size={18} className="text-teal-400" />
+                            <h2 className="text-base font-bold text-white">Basic Details</h2>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <div className="md:col-span-2">
+                                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                                    Property Name <span className="text-teal-400">*</span>
+                                </label>
+                                <div className="relative rounded-xl border border-neutral-900 bg-neutral-900/50 transition-all focus-within:border-teal-500/50 focus-within:ring-2 focus-within:ring-teal-500/20">
+                                    <Building2 size={16} className="absolute left-3.5 top-3.5 text-neutral-500" />
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        required
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        placeholder="e.g. Palm Heights"
+                                        className="w-full bg-transparent py-2.5 pl-10 pr-4 text-sm text-neutral-100 placeholder-neutral-600 outline-none"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                                    Status
+                                </label>
+                                <div className="relative rounded-xl border border-neutral-900 bg-neutral-900/50 transition-all focus-within:border-teal-500/50 focus-within:ring-2 focus-within:ring-teal-500/20">
+                                    <select
+                                        name="status"
+                                        value={formData.status}
+                                        onChange={handleChange}
+                                        className="w-full bg-transparent px-3.5 py-2.5 text-sm text-neutral-100 outline-none dark:[color-scheme:dark]"
                                     >
-                                        {emp.name} {formData.selectedEmployeeIds.includes(emp.id) ? '(Assigned)' : ''}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                                        <option value="under_construction" className="bg-neutral-900 text-neutral-100">Under Construction</option>
+                                        <option value="completed" className="bg-neutral-900 text-neutral-100">Completed</option>
+                                    </select>
+                                </div>
+                            </div>
 
-                        <div>
-                            <label className="mb-2 block font-sans text-xs font-medium">Assigned Employees List</label>
-                            <div className="flex flex-wrap gap-2 rounded-md border border-[var(--line,#d1d5db)] p-3 min-h-[50px] items-center">
-                                {formData.selectedEmployeeIds.length > 0 ? (
-                                    formData.selectedEmployeeIds.map((empId) => {
-                                        const emp = employeesList.find((e) => e.id === empId);
-                                        return (
-                                            <span
-                                                key={empId}
-                                                className="inline-flex items-center gap-1.5 rounded-full bg-black px-3 py-1 text-xs text-white dark:bg-white dark:text-black"
-                                            >
-                                                <UserCheck size={12} />
-                                                <span>{emp?.name || empId}</span>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleRemoveEmployee(empId)}
-                                                    className="ml-1 text-xs hover:text-red-400 dark:hover:text-red-600 focus:outline-none"
-                                                >
-                                                    <X size={12} />
-                                                </button>
-                                            </span>
-                                        );
-                                    })
-                                ) : (
-                                    <span className="text-xs text-[var(--muted,#6b7280)]">No employees assigned yet.</span>
-                                )}
+                            <div>
+                                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                                    Address <span className="text-teal-400">*</span>
+                                </label>
+                                <div className="relative rounded-xl border border-neutral-900 bg-neutral-900/50 transition-all focus-within:border-teal-500/50 focus-within:ring-2 focus-within:ring-teal-500/20">
+                                    <MapPin size={16} className="absolute left-3.5 top-3.5 text-neutral-500" />
+                                    <input
+                                        type="text"
+                                        name="address"
+                                        required
+                                        value={formData.address}
+                                        onChange={handleChange}
+                                        placeholder="e.g. New Cairo, Egypt"
+                                        className="w-full bg-transparent py-2.5 pl-10 pr-4 text-sm text-neutral-100 placeholder-neutral-600 outline-none"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                                    Started In <span className="text-teal-400">*</span>
+                                </label>
+                                <div className="relative rounded-xl border border-neutral-900 bg-neutral-900/50 transition-all focus-within:border-teal-500/50 focus-within:ring-2 focus-within:ring-teal-500/20">
+                                    <Calendar size={16} className="absolute left-3.5 top-3.5 text-neutral-500" />
+                                    <input
+                                        type="date"
+                                        name="startedIn"
+                                        required
+                                        value={formData.startedIn}
+                                        onChange={handleChange}
+                                        className="w-full bg-transparent py-2.5 pl-10 pr-4 text-sm text-neutral-100 outline-none dark:[color-scheme:dark]"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                                    Ended In
+                                </label>
+                                <div className="relative rounded-xl border border-neutral-900 bg-neutral-900/50 transition-all focus-within:border-teal-500/50 focus-within:ring-2 focus-within:ring-teal-500/20">
+                                    <Calendar size={16} className="absolute left-3.5 top-3.5 text-neutral-500" />
+                                    <input
+                                        type="date"
+                                        name="endedIn"
+                                        value={formData.endedIn}
+                                        onChange={handleChange}
+                                        className="w-full bg-transparent py-2.5 pl-10 pr-4 text-sm text-neutral-100 outline-none dark:[color-scheme:dark]"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Actions */}
-                <div className="flex items-center justify-end gap-3 pt-2">
-                    <Link
-                        href={`/${propertyId}`}
-                        className="rounded-md border border-[var(--line,#d1d5db)] px-4 py-2 font-sans text-xs font-medium hover:bg-[var(--line,#f3f4f6)] transition-colors"
-                    >
-                        Cancel
-                    </Link>
-                    <button
-                        type="submit"
-                        disabled={submitting}
-                        className="flex items-center gap-2 rounded-md bg-black px-5 py-2 font-sans text-xs font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
-                    >
-                        {submitting ? (
-                            <>
-                                <Loader2 size={14} className="animate-spin" /> Saving...
-                            </>
-                        ) : (
-                            <>
-                                <Save size={14} /> Save Changes
-                            </>
-                        )}
-                    </button>
-                </div>
-            </form>
+                    {/* 2. Specifications — Slightly Lighter Intermediate Dark Row */}
+                    <div className="animate-in fade-in slide-in-from-bottom-3 duration-500 fill-mode-backwards delay-200 rounded-2xl border border-neutral-800/80 bg-neutral-900/60 p-6 sm:p-8 shadow-xl backdrop-blur-xl">
+                        <div className="mb-6 flex items-center gap-2 border-b border-neutral-800/80 pb-4">
+                            <Layers size={18} className="text-teal-400" />
+                            <h2 className="text-base font-bold text-white">Specifications</h2>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <div>
+                                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                                    Number of Floors <span className="text-teal-400">*</span>
+                                </label>
+                                <div className="relative rounded-xl border border-neutral-800 bg-neutral-900/50 transition-all focus-within:border-teal-500/50 focus-within:ring-2 focus-within:ring-teal-500/20">
+                                    <Layers size={16} className="absolute left-3.5 top-3.5 text-neutral-500" />
+                                    <input
+                                        type="number"
+                                        name="floorsNumber"
+                                        min="1"
+                                        required
+                                        value={formData.floorsNumber}
+                                        onChange={handleChange}
+                                        placeholder="12"
+                                        className="w-full bg-transparent py-2.5 pl-10 pr-4 text-sm text-neutral-100 placeholder-neutral-600 outline-none"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                                    Area (m²) <span className="text-teal-400">*</span>
+                                </label>
+                                <div className="relative rounded-xl border border-neutral-800 bg-neutral-900/50 transition-all focus-within:border-teal-500/50 focus-within:ring-2 focus-within:ring-teal-500/20">
+                                    <Maximize size={16} className="absolute left-3.5 top-3.5 text-neutral-500" />
+                                    <input
+                                        type="number"
+                                        step="0.1"
+                                        min="1"
+                                        name="area"
+                                        required
+                                        value={formData.area}
+                                        onChange={handleChange}
+                                        placeholder="450.5"
+                                        className="w-full bg-transparent py-2.5 pl-10 pr-4 text-sm text-neutral-100 placeholder-neutral-600 outline-none"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 3. Employee Assignments — Lighter Shade Row */}
+                    <div className="animate-in fade-in slide-in-from-bottom-3 duration-500 fill-mode-backwards delay-300 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 sm:p-8 shadow-xl backdrop-blur-xl">
+                        <div className="mb-6 flex items-center gap-2 border-b border-neutral-800 pb-4">
+                            <Users size={18} className="text-teal-400" />
+                            <h2 className="text-base font-bold text-white">Assign Employees</h2>
+                        </div>
+                        
+                        <div className="space-y-5">
+                            <div>
+                                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                                    Select Employee to Add
+                                </label>
+                                <div className="relative rounded-xl border border-neutral-800 bg-neutral-900/50 transition-all focus-within:border-teal-500/50 focus-within:ring-2 focus-within:ring-teal-500/20">
+                                    <select
+                                        onChange={handleAddEmployee}
+                                        defaultValue=""
+                                        className="w-full bg-transparent px-3.5 py-2.5 text-sm text-neutral-100 outline-none dark:[color-scheme:dark]"
+                                    >
+                                        <option value="" disabled className="bg-neutral-900 text-neutral-400">-- Choose an employee --</option>
+                                        {employeesList.map((emp) => (
+                                            <option 
+                                                key={emp.id} 
+                                                value={emp.id}
+                                                disabled={formData.selectedEmployeeIds.includes(emp.id)}
+                                                className="bg-neutral-900 text-neutral-100 disabled:text-neutral-600"
+                                            >
+                                                {emp.name} {formData.selectedEmployeeIds.includes(emp.id) ? '(Assigned)' : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                                    Assigned Employees List
+                                </label>
+                                <div className="flex flex-wrap gap-2.5 rounded-xl border border-neutral-800 bg-neutral-950/60 p-4 min-h-[60px] items-center">
+                                    {formData.selectedEmployeeIds.length > 0 ? (
+                                        formData.selectedEmployeeIds.map((empId) => {
+                                            const emp = employeesList.find((e) => e.id === empId);
+                                            return (
+                                                <span
+                                                    key={empId}
+                                                    className="inline-flex items-center gap-2 rounded-full border border-teal-500/30 bg-teal-500/10 px-3.5 py-1.5 text-xs font-semibold text-teal-300 backdrop-blur-sm transition-all hover:bg-teal-500/20"
+                                                >
+                                                    <UserCheck size={13} className="text-teal-400" />
+                                                    <span>{emp?.name || empId}</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveEmployee(empId)}
+                                                        className="ml-1 text-neutral-400 transition-colors hover:text-red-400 focus:outline-none"
+                                                    >
+                                                        <X size={13} />
+                                                    </button>
+                                                </span>
+                                            );
+                                        })
+                                    ) : (
+                                        <span className="text-xs text-neutral-500 italic">No employees assigned yet.</span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Actions Row */}
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-backwards delay-500 flex items-center justify-end gap-3 pt-4">
+                        <Link
+                            href={`/${propertyId}`}
+                            className="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-3 text-xs font-semibold text-neutral-300 transition-all hover:bg-neutral-800 hover:text-white"
+                        >
+                            Cancel
+                        </Link>
+                        <button
+                            type="submit"
+                            disabled={submitting}
+                            className="inline-flex items-center gap-2 rounded-xl bg-teal-500 px-7 py-3 text-xs font-bold text-neutral-950 shadow-lg shadow-teal-500/10 transition-all hover:bg-teal-400 hover:shadow-teal-500/25 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
+                        >
+                            {submitting ? (
+                                <>
+                                    <Loader2 size={15} className="animate-spin text-neutral-950" /> Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <Save size={15} /> Save Changes
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }

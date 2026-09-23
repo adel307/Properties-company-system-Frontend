@@ -1,3 +1,12 @@
+Updated implementation snapshot (2026-09-22)
+- The actual frontend uses Next.js App Router with TypeScript files under app/, not the older JSX route tree described below.
+- Shared shell: app/layout.tsx renders Navbar, Sidebar, Footer, and GlobalAudioRecorder.
+- Current pages: dashboard (/), property detail/edit, property creation, employees, suppliers, materials, expenses, audit logs, and the corresponding new-record pages.
+- Shared workflows are implemented by components/common/EntityPage.tsx and components/common/RecordForm.tsx.
+- lib/api now contains typed modules for properties/apartments, employees, suppliers/debt, materials, expenses/categories, audit logs, speech, and stored-audio analysis.
+- The frontend can record audio and call the backend AI workflow; NEXT_PUBLIC_API_URL defaults to http://localhost:8000/api and NEXT_PUBLIC_API_KEY is forwarded as x-api-key.
+- The older inventory below is retained as historical planning notes and is not the current file tree.
+
 app/
 ├── (routes)/
 │   ├── page.jsx                        // الصفحة الرئيسية (Property List + Hero)
@@ -33,6 +42,40 @@ components/
 │   ├── DeleteModal.jsx                 // نافذة تأكيد الحذف إعادة استخدامها لكل الكيانات
 │   ├── Pagination.jsx                  // للتحكم في page & limit عبر الـ APIs
 │   └── FilterBar.jsx                   // مكون البحث والتصنيف العام
+├── properties/
+│   ├── ShowProperties.jsx
+│   ├── FilterProperties.jsx
+│   ├── PropertyCard.jsx
+│   ├── AddPropertyModal.jsx
+│   └── ApartmentsList.jsx
+├── employees/
+│   ├── SearchEmployees.jsx
+│   ├── ShowEmployees.jsx
+│   ├── AddEmployeeModal.jsx
+│   └── UpdateEmployeeForm.jsx
+├── suppliers/
+│   ├── SuppliersDebtSummary.jsx        // كارت إجمالي الديون (/suppliers/total_debt)
+│   ├── ShowSuppliers.jsx               // جدول الموردين (مع فلتر has_debt)
+│   ├── SupplierMaterialsTable.jsx      // عرض تفاصيل المواد التابعة للمورد (View v_supplier_materials)
+│   ├── AddSupplierModal.jsx
+│   └── UpdateSupplierForm.jsx
+├── materials/
+│   ├── ShowMaterials.jsx               // عرض المواد بحالاتها (paid / as_dept)
+│   ├── MaterialCard.jsx
+│   ├── AddMaterialModal.jsx            // نموذج إضافة مادة (ربط بـ supplier_ID و property_ID)
+│   └── UpdateMaterialForm.jsx
+├── expenses/
+│   ├── DailyExpensesTable.jsx          // عرض المصروفات بحسب التاريخ
+│   ├── ExpenseCategoryFilter.jsx       // تصفية بحسب expense_categories_ID
+│   ├── ReceiptUploader.jsx             // رفع صوره الإيصال عند اختيار BANK_TRANSFER/credit_card
+│   ├── AddExpenseModal.jsx             // إضافة مصروف جديد
+│   └── CategoriesManager.jsx           // إضافة/تعديل/حذف تصنيفات المصروفات
+└── audit/
+    └── AuditLogsTable.jsx              // عرض سجل العمليات (INSERT, UPDATE, DELETE) و JSON diffs
+
+lib/api/
+├── audit.ts
+├── client.ts
 ├── properties/
 │   ├── ShowProperties.jsx
 │   ├── FilterProperties.jsx
