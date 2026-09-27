@@ -3,11 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { processAudioAndAnalyze } from "@/lib/api/processAudioAndAnalyze";
-
-interface AudioRecorderProps {
-  onAnalysisComplete?: (data: { text: string; analysis: string }) => void;
-  onTranscriptChange?: (text: string) => void;
-}
+import {BotMessageSquare} from "lucide-react"
+import { AudioRecorderProps } from "@/types/common";
 
 const ALLOWED_ROUTES = ['/employees', '/suppliers', '/materials', '/expenses'];
 
@@ -74,7 +71,7 @@ export default function AudioRecorder({
       mediaRecorder.onstop = async () => {
         const actualType = mediaRecorder.mimeType || mimeType || "audio/webm";
         const audioBlob = new Blob(audioChunksRef.current, { type: actualType });
-        
+
         setIsLoading(true);
         try {
           const result = await processAudioAndAnalyze(audioBlob);
@@ -133,13 +130,14 @@ export default function AudioRecorder({
           : "bg-teal-600 hover:bg-teal-500 text-white"
       }`}
     >
-      <span>{isLoading ? "⏳" : isRecording ? "⏹️" : "🎤"}</span>
+      
+      <span>{isLoading ? "⏳" : isRecording ? "⏹️" : <BotMessageSquare />}</span>
       <span>
         {isLoading
           ? "جاري المعالجة والتحليل..."
           : isRecording
           ? "إيقاف التسجيل"
-          : "تسجيل صوتي"}
+          : "AI Assistant"}
       </span>
     </button>
   );

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   ArrowUpRight,
   Building2,
@@ -17,6 +18,8 @@ import ShowProperties from '@/components/properties/ShowProperties';
 import FilterProperties from '@/components/Filters/FilterProperties';
 import { PropertiesFilter } from '@/types/properties';
 import type { LucideIcon } from 'lucide-react';
+
+import heroPhoto from './media/Photo.png';
 
 export default async function HomePage({ searchParams }) {
   const params = await searchParams;
@@ -38,11 +41,13 @@ export default async function HomePage({ searchParams }) {
   const totalPages = propertiesResponse?.pagination?.pages || 1;
   const currentPage = filters.page;
 
-  const employeesResponse = await employeesApi.getAll() || {data:[],pagination:[]}
+  const employeesResponse = (await employeesApi.getAll()) || {
+    data: [],
+    pagination: [],
+  };
 
-  const employees = employeesResponse.data || []
-
-  const employeesCount = employees.length || 0
+  const employees = employeesResponse.data || [];
+  const employeesCount = employees.length || 0;
 
   const getPageUrl = (pageNumber: number) => {
     const query = new URLSearchParams(params || {});
@@ -50,7 +55,9 @@ export default async function HomePage({ searchParams }) {
     return `/?${query.toString()}`;
   };
 
-  const TotalDebtRes = await suppliersApi.getTotalDebt() || {data:{total_debt:0}};
+  const TotalDebtRes = (await suppliersApi.getTotalDebt()) || {
+    data: { total_debt: 0 },
+  };
 
   const TotalDebt = TotalDebtRes.data.total_debt || 0;
 
@@ -63,24 +70,39 @@ export default async function HomePage({ searchParams }) {
           <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
           <div className="absolute -right-16 -bottom-20 hidden h-72 w-72 rounded-full border-[32px] border-amber-500/10 blur-2xl lg:block pointer-events-none" />
 
-          <div className="relative z-10 max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-teal-500/20 bg-teal-500/10 px-3 py-1 text-[11px] font-semibold tracking-widest text-teal-400 uppercase">
-              <Sparkles size={12} />
-              <span> الاثنين / 13 سبتمبر 2026 </span>
+          <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center text-center space-y-6">
+            
+            {/* الصورة بحجم رئيسي في الأعلى */}
+            <div className="w-full max-w-3xl overflow-hidden rounded-2xl border border-neutral-800 shadow-2xl">
+              <Image
+                src={heroPhoto}
+                alt="Main Hero Banner"
+                className="w-full object-cover transition-transform duration-500 hover:scale-105"
+                priority
+              />
             </div>
 
-            <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl leading-tight">
-              نظرة علي <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-200">أعمالك</span>
+            {/* التاريخ والتلميح */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-teal-500/20 bg-teal-500/10 px-4 py-1.5 text-xs font-semibold tracking-widest text-teal-400 uppercase mt-4">
+              <Sparkles size={14} />
+              <span> كامل تفاصيل الشركة. </span>
+            </div>
+
+            {/* العنوان النصي تحته */}
+            <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-tight">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-200">REC company</span>
             </h1>
 
-            <p className="mt-4 max-w-xl text-base text-neutral-400 sm:text-lg leading-relaxed">
+            {/* الوصف */}
+            <p className="max-w-2xl text-base text-neutral-400 sm:text-lg leading-relaxed">
               One grounded place for the properties, employees, materials, and decisions that move REC forward.
             </p>
 
-            <div className="mt-8 flex flex-wrap gap-4 text-sm font-medium">
+            {/* الأزرار */}
+            <div className="pt-2 flex flex-wrap justify-center gap-4 text-sm font-medium">
               <Link
                 href="/properties/new"
-                className="inline-flex items-center gap-2 rounded-xl bg-teal-500 px-5 py-3 text-neutral-950 font-semibold transition-all duration-200 hover:bg-teal-400 hover:shadow-lg hover:shadow-teal-500/20 active:scale-95"
+                className="inline-flex items-center gap-2 rounded-xl bg-teal-500 px-6 py-3 text-neutral-950 font-semibold transition-all duration-200 hover:bg-teal-400 hover:shadow-lg hover:shadow-teal-500/20 active:scale-95"
               >
                 Add property <Plus size={18} />
               </Link>
@@ -110,7 +132,7 @@ export default async function HomePage({ searchParams }) {
           <FilterProperties currentFilters={params} />
         </div>
 
-        {/* Properties List (Wider columns & Gradient/Fade rows) */}
+        {/* Properties List */}
         <div className="w-full overflow-x-auto rounded-xl border border-neutral-800 bg-neutral-900/30">
           <ShowProperties properties={properties} />
         </div>

@@ -31,7 +31,7 @@ export default function RootLayout({
         {/* Main Workspace Body */}
         <div className="mx-auto flex min-h-[calc(100vh-72px)] w-full max-w-[1480px] gap-6 px-4 py-6 sm:px-6 lg:px-8 flex-1">
           {/* Fixed/Sticky Sidebar Container */}
-          <aside className="hidden md:block w-64 shrink-0">
+          <aside className="hidden w-64 shrink-0">
             <div className="sticky top-[88px] rounded-2xl border border-neutral-800 bg-neutral-900/40 p-4 backdrop-blur-sm">
               <Sidebar />
             </div>

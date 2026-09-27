@@ -36,10 +36,16 @@ export default function Navbar({ onMenuToggle }: NavbarProps) {
           <Link href="/expenses" className="hover:text-teal-400 transition-colors">
             Finance
           </Link>
+          <Link href="/audit-logs" className="hover:text-teal-400 transition-colors">
+            audit logs
+          </Link>
+          <Link href="/ai-chat" className="hover:text-teal-400 transition-colors">
+            ai chat
+          </Link>
         </nav>
 
         <div className="flex items-center gap-4 text-slate-400">
-          <button 
+          <button
             aria-label="Notifications" 
             className="rounded-lg p-2 text-slate-400 hover:bg-slate-900 hover:text-white transition-colors"
           >
@@ -48,7 +54,7 @@ export default function Navbar({ onMenuToggle }: NavbarProps) {
           
           <span className="hidden h-6 w-px bg-slate-800 sm:block" />
 
-          <button 
+          <button
             className="flex items-center gap-2.5 rounded-lg p-1.5 hover:bg-slate-900 text-slate-300 hover:text-white transition-colors" 
             aria-label="Open account"
           >
@@ -58,7 +64,7 @@ export default function Navbar({ onMenuToggle }: NavbarProps) {
             </span>
           </button>
 
-          <button 
+          <button
             onClick={onMenuToggle}
             className="rounded-lg p-2 text-slate-400 hover:bg-slate-900 hover:text-white md:hidden transition-colors" 
             aria-label="Open menu"

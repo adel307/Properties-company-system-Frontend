@@ -1,3 +1,5 @@
+import { FormEvent } from "react";
+
 export interface ColumnOption {
   label: string;
   value: string | number;
@@ -37,4 +39,16 @@ export interface EntityPageProps {
   onAction?: () => void;
   onSave?: (id: string, updatedData: Partial<EntityRow>) => Promise<any>;
   onDelete?: (id: string) => Promise<void | any>;
+}
+
+export interface EntityEditModalProps {
+    isOpen: boolean;
+    columns: Column[];
+    editData: Partial<EntityRow> | null;
+    isSaving: boolean;
+    saveError: string;
+    actionType?: string;
+    onClose: () => void;
+    onSave: (e: FormEvent) => void;
+    onChangeField: (key: string, value: unknown) => void;
 }

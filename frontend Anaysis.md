@@ -1,13 +1,14 @@
 Frontend analysis
 
-Current implementation snapshot (2026-09-22)
+Current implementation snapshot (2026-09-24)
 - The frontend is a Next.js 15 App Router application using TypeScript, React 19, Tailwind CSS v4, and lucide-react.
 - The current route set is /, /[propertyID], /[propertyID]/edit, /properties/new, /employees, /employees/new, /suppliers, /suppliers/new, /materials, /materials/new, /expenses, /expenses/new, and /audit-logs.
 - app/layout.tsx now renders Navbar, Sidebar, Footer, and GlobalAudioRecorder globally. The dashboard uses a responsive dark neutral/teal operations theme.
 - EntityPage is the shared client-side table/detail editor for employees, suppliers, materials, and expenses. RecordForm is the shared create form and supports conditional fields, transitions, and server-action submission.
-- The frontend API layer includes properties, employees, suppliers, materials, expenses/categories, audit logs, speech, and stored-audio analysis modules.
+- The frontend API layer includes properties, employees, suppliers, materials, expenses/categories, audit logs, and audio analysis through processAudioAndAnalyze.ts.
 - lib/api/client.ts supports query parameters, JSON and FormData bodies, NEXT_PUBLIC_API_URL, and optional NEXT_PUBLIC_API_KEY sent as x-api-key. The default API URL is http://localhost:8000/api.
-- The global audio recorder connects the frontend to the backend voice workflow. Responses can include transcription text, Gemini analysis, and the model used.
+- The global audio recorder connects the frontend to the backend voice workflow. Responses can include transcription text, AI analysis, and the model used.
+- apiFetch supports JSON and FormData requests, query parameters, the optional x-api-key header, and no-store-style revalidation. Request failures are logged and currently resolve to null rather than being rethrown.
 - Current gaps: the expenses page has placeholder save/delete handlers, and the audit page fetches logs but currently passes an empty array to AuditLogsTable.
 
 Project overview

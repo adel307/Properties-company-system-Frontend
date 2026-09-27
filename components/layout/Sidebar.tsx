@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {
   ArrowUpRight,
   ClipboardPlus,
+  FileText,
   Receipt,
   Store,
   Users,
@@ -19,6 +20,7 @@ const actions: Array<[string, string, LucideIcon]> = [
   ['/suppliers', 'Suppliers', Store],
   ['/materials', 'Materials', ClipboardPlus],
   ['/expenses', 'Expenses', Receipt],
+  ['/audit-logs', 'audit logs',FileText],
 ];
 
 export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
