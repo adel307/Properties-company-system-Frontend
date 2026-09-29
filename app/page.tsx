@@ -104,7 +104,7 @@ export default async function HomePage({ searchParams }) {
                 href="/properties/new"
                 className="inline-flex items-center gap-2 rounded-xl bg-teal-500 px-6 py-3 text-neutral-950 font-semibold transition-all duration-200 hover:bg-teal-400 hover:shadow-lg hover:shadow-teal-500/20 active:scale-95"
               >
-                Add property <Plus size={18} />
+                start new project <Plus size={18} />
               </Link>
             </div>
           </div>

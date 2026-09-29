@@ -137,7 +137,7 @@ export default function AudioRecorder({
           ? "جاري المعالجة والتحليل..."
           : isRecording
           ? "إيقاف التسجيل"
-          : "AI Assistant"}
+          : "AI agent"}
       </span>
     </button>
   );

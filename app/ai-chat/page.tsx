@@ -1,4 +1,5 @@
-import { getAiResults, AiResultFile } from "@/actions/getAiResults";
+import { getAiResults } from "@/actions/getAiResults";
+import { AiResultFile } from "@/types/ai";
 import {
   Bot,
   User,
@@ -24,7 +25,7 @@ export default async function AiChatPage() {
         <div className="relative z-10 space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#00B8A9]/10 text-[#00B8A9] border border-[#00B8A9]/20">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>AI ASSISTANT LOGS</span>
+            <span>AI agent LOGS</span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight flex items-center gap-3">
