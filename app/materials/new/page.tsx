@@ -10,14 +10,23 @@ import { SupplierRecord } from '@/types/suppliers';
 import { PropertyOption } from '@/types/properties';
 import { FormValues } from '@/types/RecordForm';
 
-export default async function NewMaterialsPage() {
-    const suppliersRes  = await suppliersApi.getAll()
-    
-    const propertiesRes = await propertiesApi.getAll()
+export const dynamic = 'force-dynamic';
 
-    const suppliers  = suppliersRes.data || []
-    
-    const properties = propertiesRes.data || []
+export default async function NewMaterialsPage() {
+    let suppliers: SupplierRecord[] = [];
+    let properties: PropertyOption[] = [];
+
+    try {
+        const [suppliersRes, propertiesRes] = await Promise.all([
+            suppliersApi.getAll().catch(() => null),
+            propertiesApi.getAll().catch(() => null),
+        ]);
+
+        suppliers = suppliersRes?.data || [];
+        properties = propertiesRes?.data || [];
+    } catch (error) {
+        console.error('Failed to load form initial data:', error);
+    }
 
     const supplierOptions = suppliers.map((s: SupplierRecord) => ({
         label: s.name,
