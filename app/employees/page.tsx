@@ -30,7 +30,7 @@ export default async function EmployeesPage() {
                 const payload = {
                     name:updatedData.name,
                     salary:parseInt(updatedData.salary),
-                    experienceYears:updatedData.experienceYears,
+                    experienceYears:parseInt(updatedData.experienceYears),
                     age:parseInt(updatedData.age),
                     phone:updatedData.phone,
 
