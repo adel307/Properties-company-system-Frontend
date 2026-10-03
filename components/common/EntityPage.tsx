@@ -8,6 +8,9 @@ import { EntityTableCell } from './EntityPage/EntityTableCell';
 import { EntityTablePagination } from './EntityPage/EntityTablePagination';
 import { EntityEditModal } from './EntityPage/EntityEditModal';
 
+// استيراد المكون الجديد بدلاً من Server Action
+import JsonExporter from './EntityPage/JsonExporter';
+
 const PAGE_SIZE = 5;
 
 export default function EntityPage({
@@ -121,6 +124,17 @@ export default function EntityPage({
         setEditData((prev) => ({ ...prev, [key]: value }));
     };
 
+    // تجهيز وتحويل بيانات الجدول وتحديد اسم العمود المناسب (label أو key)
+    const formattedExportData = useMemo(() => {
+        return tableRows.map((row) => {
+            const reportItem: Record<string, any> = {};
+            columns.forEach((col) => {
+                reportItem[col.label || col.key] = row[col.key];
+            });
+            return reportItem;
+        });
+    }, [tableRows, columns]);
+
     const getRowBackgroundStyle = (index: number, total: number) => {
         const totalRows = Math.max(total - 1, 1);
         const progress = index / totalRows;
@@ -147,7 +161,13 @@ export default function EntityPage({
                     </div>
 
                     {tableRows.length !== 0 && (
-                        <div className="flex-shrink-0">
+                        <div className="flex items-center gap-3 flex-shrink-0 flex-wrap">
+                            <JsonExporter
+                                data={formattedExportData}
+                                format="excel"
+                                savePath={`${title}_report`}
+                            />
+
                             {actionHref ? (
                                 <Link
                                     href={actionHref}

@@ -15,8 +15,8 @@ export default function NewPropertyPage() {
                 name: rawData.name,
                 status: rawData.status,
                 address: rawData.address,
-                startedIn: new Date(rawData.started_in).toISOString() || null,
-                endedIn: rawData.status === 'completed' && new Date(rawData.ended_in).toISOString() || null,
+                startedIn: new Date(rawData.started_in) || null,
+                endedIn: rawData.status === 'completed' && new Date(rawData.ended_in) || null,
                 floorsNumber: rawData.floors_number ? Number(rawData.floors_number) : 0,
                 area: rawData.area ? String(rawData.area) : '0',
             };

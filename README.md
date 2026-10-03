@@ -18,6 +18,8 @@
 ![Gemini](https://img.shields.io/badge/Google_Gemini-8E75B2?style=flat&logo=googlegemini&logoColor=white)
 ![Groq](https://img.shields.io/badge/Groq_Whisper-F55036?style=flat)
 
+## [Live demo](https://properties-company-system-frontend-one.vercel.app/)
+
 </div>
 
 <div dir="rtl">

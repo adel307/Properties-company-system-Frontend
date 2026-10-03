@@ -65,10 +65,12 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
                 setEmployeesList(employees);
 
                 if (data) {
-                    const formatDate = (dateStr?: string) => 
-                        dateStr ? new Date(dateStr).toISOString().split('T')[0] : '';
+                    const formatDate = (dateStr?: string) => {
+                        if (!dateStr) return '';
+                        const date = new Date(dateStr);
+                        return isNaN(date.getTime()) ? '' : date.toISOString().split('T')[0];
+                    };
 
-                    // استخراج معرفات الموظفين المرتبطين حالياً
                     const extractedEmployeeIds = Array.isArray(data.employees)
                         ? data.employees.map((e: PropertyEmployeeAssignment) => e.employeeId || e.employee?.id || e.id).filter(Boolean)
                         : [];
@@ -109,7 +111,6 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    // إضافة موظف عند اختياره من الـ Select Box
     const handleAddEmployee = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedId = e.target.value;
         if (!selectedId) return;
@@ -122,11 +123,9 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
             };
         });
 
-        // إعادة ضبط الخيار المحدد في القائمة
         e.target.value = '';
     };
 
-    // إزالة موظف من القائمة المختارة
     const handleRemoveEmployee = (empId: string) => {
         setFormData((prev) => ({
             ...prev,
@@ -141,8 +140,9 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
             setError(null);
 
             const toISOFormat = (dateStr: string) => {
-                if (!dateStr) return '';
-                return new Date(dateStr).toISOString();
+                if (!dateStr) return null;
+                const date = new Date(dateStr);
+                return isNaN(date.getTime()) ? null : date.toISOString();
             };
 
             if (formData.startedIn && formData.endedIn && new Date(formData.startedIn) > new Date(formData.endedIn)) {
@@ -151,16 +151,20 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
                 return;
             }
 
-            // تجهيز البيانات بالشكل المحدد في API Request
+            // تجهيز الـ Payload بحيث يحتوي الحقلان على قائمة بالـ IDs فقط داخل الأوبجكت
             const payload = {
                 name: formData.name.trim(),
                 status: formData.status,
                 address: formData.address.trim(),
                 startedIn: toISOFormat(formData.startedIn),
-                endedIn: toISOFormat(formData.endedIn),
+                ...(formData.endedIn ? { endedIn: toISOFormat(formData.endedIn) } : { endedIn: null }),
                 floorsNumber: formData.floorsNumber ? Number(formData.floorsNumber) : 0,
                 area: formData.area ? String(formData.area) : '0',
-                apartments: formData.apartments.map((apt) => ({ id: apt.id })),
+                // لاستخراج الـ ID فقط لكل شقة سواء كانت string أو object
+                apartments: formData.apartments.map((apt: any) => ({
+                    id: typeof apt === 'string' ? apt : apt.id
+                })).filter((apt) => Boolean(apt.id)),
+                // تحويل كل id موظف تم اختياره إلى أوبجكت يحتوي على id فقط
                 employees: formData.selectedEmployeeIds.map((id) => ({ id })),
             };
 
@@ -216,7 +220,7 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* 1. Basic Details — Deep Dark Row (Top) */}
+                    {/* Basic Details */}
                     <div className="animate-in fade-in slide-in-from-bottom-3 duration-500 fill-mode-backwards delay-100 rounded-2xl border border-neutral-900 bg-neutral-950/90 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
                         <div className="mb-6 flex items-center gap-2 border-b border-neutral-900 pb-4">
                             <Building2 size={18} className="text-teal-400" />
@@ -312,7 +316,7 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
                         </div>
                     </div>
 
-                    {/* 2. Specifications — Slightly Lighter Intermediate Dark Row */}
+                    {/* Specifications */}
                     <div className="animate-in fade-in slide-in-from-bottom-3 duration-500 fill-mode-backwards delay-200 rounded-2xl border border-neutral-800/80 bg-neutral-900/60 p-6 sm:p-8 shadow-xl backdrop-blur-xl">
                         <div className="mb-6 flex items-center gap-2 border-b border-neutral-800/80 pb-4">
                             <Layers size={18} className="text-teal-400" />
@@ -361,7 +365,7 @@ export default function EditPropertyPage({ params }: EditPropertyProps) {
                         </div>
                     </div>
 
-                    {/* 3. Employee Assignments — Lighter Shade Row */}
+                    {/* Employee Assignments */}
                     <div className="animate-in fade-in slide-in-from-bottom-3 duration-500 fill-mode-backwards delay-300 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 sm:p-8 shadow-xl backdrop-blur-xl">
                         <div className="mb-6 flex items-center gap-2 border-b border-neutral-800 pb-4">
                             <Users size={18} className="text-teal-400" />

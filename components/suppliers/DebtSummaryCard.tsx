@@ -13,16 +13,18 @@ export default function DebtSummaryCard({ amount = 0, currency = 'USD' }) {
   }).format(safeAmount);
 
   return (
-    <div className="flex items-center justify-between border border-[var(--teal)] bg-[var(--teal)] p-5 text-white">
-      <div>
-        <p className="font-sans text-[10px] uppercase tracking-[.18em] text-white/70">
-          Total supplier debt
-        </p>
-        <p className="display mt-2 text-3xl font-bold">
-          {formattedAmount}
-        </p>
+    <div className="flex items-center gap-4 rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-md">
+      <div className="rounded-lg bg-[var(--teal)]/20 p-2.5 text-[var(--teal)] border border-[var(--teal)]/30">
+        <CircleDollarSign size={22} strokeWidth={1.8} aria-hidden="true" />
       </div>
-      <CircleDollarSign size={28} strokeWidth={1.2} aria-hidden="true" />
+      <div>
+        <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+          Total supplier debt
+        </span>
+        <span className="text-xl font-bold tracking-tight text-slate-100">
+          {formattedAmount}
+        </span>
+      </div>
     </div>
   );
 }

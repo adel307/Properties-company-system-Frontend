@@ -19,7 +19,7 @@ export default async function SuppliersPage({ searchParams }) {
 
     const debtResponse = await suppliersApi.getTotalDebt();
     const totalDebt = debtResponse?.data?.total_debt ?? debtResponse?.total_debt ?? 0;
-    
+
     const rows = rawRows.map((supplier: SupplierRecord) => {
 
         const suppliersMaterials = supplier.materials.map((material)=>{
