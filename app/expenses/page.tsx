@@ -6,6 +6,12 @@ export default async function ExpensesPage() {
     const response = await expensesApi.getAll();
     const rows = Array.isArray(response) ? response : response?.data || [];
 
+    const Categories = await expensesApi.categories.getAll() || {data:[],pagination:[]}
+    
+    const CategoriesList = Categories.data || [];
+
+    const CategoriesOptions = CategoriesList.map((c) => {return {label:c.name,value:c.id}})
+
     const EnteredRaws = rows.map((row) => ({
         id: row.id,
         sender: row.sender,
@@ -19,6 +25,7 @@ export default async function ExpensesPage() {
         approvedBy: row.approvedBy,
         notes: row.notes,
         category: row.category,
+        categoryName: row.category.name,
     }));
 
     const columns: Column[] = [
@@ -32,8 +39,8 @@ export default async function ExpensesPage() {
         { key: 'approvedBy', label: 'approved by', type: 'text' },
         { key: 'notes', label: 'notes', type: 'text' },
         {
-            key: 'category', label: 'Category', type: 'select',
-            // options: 
+            key: 'categoryName', label: 'Category', type: 'select',
+            options: CategoriesOptions
         },
     ];
 
@@ -42,7 +49,7 @@ export default async function ExpensesPage() {
         return null;
     };
 
-    const handleDelete = async (id: string) => {
+    const handleDelete = async (raw) => {
         'use server';
         await null;
     };

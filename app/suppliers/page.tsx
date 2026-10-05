@@ -15,14 +15,14 @@ export default async function SuppliersPage({ searchParams }) {
     }
 
     const response = await suppliersApi.getAll(filters);
-    const rawRows = Array.isArray(response) ? response : response?.data || [];
+    const rows = Array.isArray(response) ? response : response?.data || [];
 
     const debtResponse = await suppliersApi.getTotalDebt();
     const totalDebt = debtResponse?.data?.total_debt ?? debtResponse?.total_debt ?? 0;
 
-    const rows = rawRows.map((supplier: SupplierRecord) => {
+    const EnteredRaws = rows.map((supplier: SupplierRecord) => {
 
-        const suppliersMaterials = supplier.materials.map((material)=>{
+        const suppliersDetails = supplier.materials.map((material)=>{
             return {
                 totalPrice:material.totalPrice,
                 paidPrice:material.paidPrice,
@@ -32,7 +32,7 @@ export default async function SuppliersPage({ searchParams }) {
         })
 
         let totalDebtAmount = 0
-        suppliersMaterials.map(({totalPrice,paidPrice}) => {
+        suppliersDetails.map(({totalPrice,paidPrice}) => {
             const Amount = totalPrice - paidPrice
             totalDebtAmount += Amount
         })
@@ -57,11 +57,12 @@ export default async function SuppliersPage({ searchParams }) {
                 title="Suppliers"
                 eyebrow="Supply chain"
                 description="Track who is owed, what arrived, and where every material is being used."
-                rows={rows}
+                rows={EnteredRaws}
                 action="Add supplier"
                 actionHref="/suppliers/new"
-                onDelete={async (id) => {
+                onDelete={async (raw) => {
                     'use server';
+                    const { id } = raw;
                     await suppliersApi.delete(id);
                 }}
                 onSave={async (id, updatedData) => {
@@ -71,9 +72,8 @@ export default async function SuppliersPage({ searchParams }) {
                 }}
                 columns={[
                     { key: 'name', label: 'Supplier' , type:"text"},
-                    { key: 'total_debt', label: 'Outstanding debt' , type:"number"},
-                    { key: 'updatedAt', label: 'Updated' , type:"date"},
-                    { key: 'materials', label: 'materials' , type:"text"},
+                    { key: 'total_debt', label: 'Outstanding debt' , type:"readonly"},
+                    { key: 'materials', label: 'materials' , type:"readonly"},
                 ]}
                 />
             </div>

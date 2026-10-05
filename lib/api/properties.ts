@@ -11,7 +11,7 @@ export const propertiesApi = {
 
   // Apartments Sub-module
   apartments: {
-    getAll: () => apiFetch('/apartments'),
+    getAll: (params = { page: 1, limit: 100 }) => apiFetch('/apartments', { params }),
     getById: (id) => apiFetch(`/apartments/${id}`),
     create: (data) => apiFetch('/apartments', { method: 'POST', body: data }),
     update: (id, data) => apiFetch(`/apartments/${id}`, { method: 'PUT', body: data }),

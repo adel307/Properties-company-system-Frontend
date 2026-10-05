@@ -12,11 +12,7 @@ export interface Column {
   options?: ColumnOption[];
 }
 
-export interface EntityRow {
-  [key: string]: any;
-}
-
-export type EntityValue = string | number | boolean | null | undefined | EntityObject | EntityObject[];
+export type EntityValue = string | number | boolean | null | undefined | EntityObject | EntityObject[] ;
 
 export interface EntityObject {
   [key: string]: EntityValue;
@@ -32,13 +28,14 @@ export interface EntityPageProps {
   eyebrow: string;
   description: string;
   rows?: EntityRow[];
+  Suffixes?: EntityRow[];
   columns?: Column[];
   action?: string;
   actionHref?: string;
   detailHref?: string;
   onAction?: () => void;
   onSave?: (id: string, updatedData: Partial<EntityRow>) => Promise<any>;
-  onDelete?: (id: string) => Promise<void | any>;
+  onDelete?: (raw: EntityRow) => Promise<void | any>;
 }
 
 export interface EntityEditModalProps {

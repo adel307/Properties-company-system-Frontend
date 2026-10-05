@@ -5,3 +5,7 @@ export * from './suppliers';
 export * from './materials';
 export * from './expenses';
 export * from './audit';
+export * from './tenants';
+export * from './leases';
+export * from './leasePayments';
+export * from './paymentTransactions';

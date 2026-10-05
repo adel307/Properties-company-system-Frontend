@@ -33,7 +33,7 @@ export default async function NewMaterialsPage() {
         value: s.id,
     }));
     
-    const propertyOptions = properties.map((p: PropertyOption) => ({
+    const propertiesOptions = properties.map((p: PropertyOption) => ({
         label: p.name,
         value: p.id,
     }));
@@ -99,7 +99,7 @@ export default async function NewMaterialsPage() {
                     name: 'propertyId', 
                     label: 'Property', 
                     type: 'select', 
-                    options: propertyOptions, 
+                    options: propertiesOptions, 
                     required: true 
                 },
                 { 

@@ -37,6 +37,7 @@ export interface EditPropertyProps {
 export interface PropertyOption {
   id: string;
   name: string;
+  number?: string;
 }
 
 export interface AddApartmentFormProps {
@@ -63,3 +64,5 @@ export interface PropertyEmployeeAssignment {
   employee?: EmployeeReference;
   id?: string;
 }
+
+export type PageParams = { page: number; limit: number };

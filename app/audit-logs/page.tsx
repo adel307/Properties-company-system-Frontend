@@ -15,7 +15,7 @@ export default async function AuditLogsPage() {
             rows={rows}
             action="Add AuditLog" 
             actionHref="/audit-logs"
-            onDelete={async (id) => {
+            onDelete={async (raw) => {
                 'use server';
                 return null;
             }}
@@ -28,8 +28,8 @@ export default async function AuditLogsPage() {
                 { key: 'actionType', label: 'action', type:"text" },
                 { key: 'recordId', label: 'ID', type:"text" },
                 { key: 'createdAt', label: 'Date', type:"date" },
-                { key: 'oldData', label: 'old data' , type:"json" },
-                { key: 'newData', label: 'new data', type:"json" }
+                // { key: 'oldData', label: 'old data' , type:"json" },
+                // { key: 'newData', label: 'new data', type:"json" }
             ]}
         />
     )

@@ -2,7 +2,7 @@
 
 import { EntityEditModalProps } from '@/types/EntityPage';
 
-const EXCLUDED_EDIT_KEYS = ['total_debt', 'updatedAt', 'id', 'createdAt', 'properties', 'materials'];
+const EXCLUDED_EDIT_KEYS = [];
 
 export function EntityEditModal({
     isOpen,
@@ -17,7 +17,13 @@ export function EntityEditModal({
 }: EntityEditModalProps) {
     if (!isOpen) return null;
 
-    const editableColumns = columns.filter(({ key }) => !EXCLUDED_EDIT_KEYS.includes(key));
+    // تصفية الاعمدة لاستبعاد المفاتيح الممنوعة وأي عمود نوعه read-only أو readonly
+    const editableColumns = columns.filter(
+        ({ key, type }) => 
+            !EXCLUDED_EDIT_KEYS.includes(key) && 
+            type !== 'readonly' && 
+            type !== 'read-only'
+    );
 
     return (
         <div

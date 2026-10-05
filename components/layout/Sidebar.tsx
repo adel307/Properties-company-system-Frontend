@@ -4,77 +4,74 @@ import Link from 'next/link';
 import {
   ArrowUpRight,
   ClipboardPlus,
-  FileText,
+  ScrollText,
   Receipt,
   Store,
   Users,
   House,
+  Building2,
+  FileKey,
+  UserCheck,
+  CreditCard,
+  ArrowLeftRight,
+  Bot,
   X,
   type LucideIcon,
 } from 'lucide-react';
 import { SidebarProps } from '@/types/common';
 
 const actions: Array<[string, string, LucideIcon]> = [
-  ['/', 'Home', House],
+  ['/', 'Overview', House],
+  ['/apartments', 'Apartments', Building2],
   ['/employees', 'Employees', Users],
+  ['/tenants', 'Tenants', UserCheck],
   ['/suppliers', 'Suppliers', Store],
   ['/materials', 'Materials', ClipboardPlus],
-  ['/expenses', 'Expenses', Receipt],
-  ['/audit-logs', 'audit logs',FileText],
+  ['/leases', 'Leases', FileKey],
+  ['/LeasePayment', 'Lease Payments', CreditCard],
+  ['/PaymentTransaction', 'Payment Transactions', ArrowLeftRight],
+  ['/ai-chat', 'AI Chat', Bot],
+  ['/expenses', 'Finance', Receipt],
+  ['/audit-logs', 'Audit Logs', ScrollText],
 ];
 
 export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
+  if (!isOpen) return null;
+
   return (
     <>
-      {/* 1. Backdrop for Mobile & Tablet */}
-      {isOpen && (
-        <div
-          onClick={onClose}
-          className="fixed inset-0 z-40 bg-neutral-950/80 backdrop-blur-sm md:hidden transition-opacity duration-300"
-        />
-      )}
+      {/* 1. Backdrop مع Blur يغطي كامل الشاشة خلف القائمة */}
+      <div
+        onClick={onClose}
+        className="fixed inset-0 z-50 bg-neutral-950/70 backdrop-blur-md transition-opacity duration-300"
+      />
 
-      {/* 2. Sidebar Drawer / Container */}
-      <aside
-        className={`
-          fixed top-0 bottom-0 left-0 z-50 w-72 border-r border-neutral-800/80 bg-neutral-950 p-6 transition-transform duration-300 ease-in-out md:static md:z-auto md:w-full md:border-none md:bg-transparent md:p-0 md:translate-x-0
-          ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-        `}
-      >
+      {/* 2. Sidebar Drawer عائم فوق المحتوى */}
+      <aside className="fixed top-0 bottom-0 right-0 z-50 w-80 max-w-[85vw] border-l border-neutral-800/80 bg-neutral-950/95 p-6 backdrop-blur-xl shadow-2xl overflow-y-auto animate-in slide-in-from-left duration-300">
         <nav className="w-full">
-          {/* Header in Mobile View */}
-          <div className="flex items-center justify-between mb-6 md:hidden">
+          {/* Header القائمة */}
+          <div className="flex items-center justify-between pb-4 mb-6 border-b border-neutral-800/80">
             <span className="font-sans text-xs font-bold uppercase tracking-widest text-neutral-400">
               Navigation
             </span>
             <button
               onClick={onClose}
-              className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors"
+              className="rounded-lg p-2 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors"
               aria-label="Close menu"
             >
               <X size={20} />
             </button>
           </div>
 
-          <p className="hidden md:block mb-4 font-sans text-xs font-bold uppercase tracking-widest text-neutral-400">
-            Quick actions
-          </p>
-
+          {/* روابط التنقل */}
           <div className="space-y-2">
             {actions.map(([href, label, Icon], index) => {
-              const bgStyle = {
-                backgroundColor: `rgba(255, 255, 255, ${0.02 + index * 0.025})`,
-                animationDelay: `${index * 80}ms`,
-                animationFillMode: 'forwards' as const,
-              };
-
               return (
                 <Link
                   key={label}
                   href={href}
                   onClick={onClose}
-                  style={bgStyle}
-                  className="group flex items-center justify-between rounded-xl border border-neutral-800/80 px-4 py-3.5 transition-all duration-300 ease-out hover:border-teal-500/40 hover:bg-neutral-800/60 active:scale-[0.98] animate-fade-in-up"
+                  className="group flex items-center justify-between rounded-xl border border-neutral-800/80 bg-neutral-900/40 px-4 py-3.5 transition-all duration-200 hover:border-teal-500/40 hover:bg-neutral-800/80 active:scale-[0.98]"
                 >
                   <span className="flex items-center gap-3.5 font-sans text-sm font-medium text-neutral-300 transition-colors group-hover:text-white truncate">
                     <Icon

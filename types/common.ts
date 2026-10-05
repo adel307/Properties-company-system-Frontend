@@ -11,3 +11,9 @@ export interface AudioRecorderProps {
   onAnalysisComplete?: (data: { text: string; analysis: string }) => void;
   onTranscriptChange?: (text: string) => void;
 }
+
+
+export type Options = {
+  label: string;
+  value: string;
+}[];

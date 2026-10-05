@@ -48,8 +48,9 @@ export default async function MaterialsPage() {
             rows={EnteredRaws}
             action="Add material"
             actionHref="/materials/new"
-            onDelete={async (id) => {
+            onDelete={async (raw) => {
                 'use server';
+                const { id } = raw;
                 await materialsApi.delete(id);
             }}
             onSave={async (id, updatedData) => {
@@ -64,7 +65,6 @@ export default async function MaterialsPage() {
                     paymentDate:updatedData.paymentDate,
                     supplierId:updatedData.supplierId,
                     propertyId:updatedData.propertyId,
-
                 }
                 const result = await materialsApi.update(id, payload);
                 return result;
